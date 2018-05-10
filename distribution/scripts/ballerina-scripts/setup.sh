@@ -18,9 +18,10 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
+netty_host=$2
 
 if [[ -z  $1  ]]; then
-    echo "Please provide ballerina version. Example: $0 ballerina-platform-0.970.0"
+    echo "Please provide ballerina version and netty host. Example: $0 ballerina-platform-0.970.0 10.20.30.40"
     exit 1
 fi
 
@@ -49,5 +50,10 @@ mv $ballerina_path $HOME/ballerina
 cp $script_dir/bal/helloworld.bal $HOME/ballerina/bin
 cp $script_dir/bal/transformation.bal $HOME/ballerina/bin
 cp $script_dir/bal/passthrough.bal $HOME/ballerina/bin
+
+#Add Netty Host to /etc/hosts
+sudo -s <<EOF
+echo "$netty_host netty" >> /etc/hosts
+EOF
 
 echo "Completed"

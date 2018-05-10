@@ -46,6 +46,10 @@ if pgrep -f ballerina/bre > /dev/null; then
     pkill -f ballerina/bre
 fi
 
+if [ ! -d "${ballerina_path}/logs" ]; then
+    mkdir ${ballerina_path}/logs
+fi 
+
 log_files=(${ballerina_path}/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp/${bal_file}/"
