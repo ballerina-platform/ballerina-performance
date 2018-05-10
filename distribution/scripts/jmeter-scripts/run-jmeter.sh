@@ -31,14 +31,23 @@ export PATH=$JMETER_HOME/bin:$PATH
 
 message_size=(50 1024 10240)
 concurrent_users=(50 100 500)
-ballerina_files=("transformation.bal" "passthrough.bal")
-ballerina_flags=("\ " "--observe" "-e\ b7a.observability.tracing.enabled=true" "-e\ b7a.observability.metrics.enabled=true" "-e\ b7a.observability.metrics.enabled=true\ -e\ b7a.observability.metrics.provider=noop" "-e\ b7a.observability.tracing.enabled=true\ -e\ b7a.observability.tracing.name=noop")
-ballerina_flags_name=("default" "observe" "tracing" "metrics" "metricsnoop" "tracingnoop")
+ballerina_files=("passthrough.bal")
+# Only the default ballerina flag is configured, this can be extended by adding the other required ballerina flags
+ballerina_flags=("\ ")
+ballerina_flags_name=("default")
 ballerina_heap_size=(1G 250M)
 
 ballerina_host=10.42.0.6
-api_path=/HelloWorld/sayHello
+api_path=/passthrough
 ballerina_ssh_host=ballerina
+
+backend_ssh_host=netty
+netty_port=8688
+
+jmeter1_host=192.168.32.12
+jmeter2_host=192.168.32.13
+jmeter1_ssh_host=jmeter1
+jmeter2_ssh_host=jmeter2
 
 # Test Duration in seconds
 test_duration=600
@@ -49,7 +58,11 @@ warmup_time=5
 mkdir results
 cp $0 results
 
-$HOME/payloads/generate-payloads.sh
+echo "Generating Payloads in $jmeter1_host"
+ssh $jmeter1_ssh_host "./payloads/generate-payloads.sh"
+echo "Generating Payloads in $jmeter2_host"
+ssh $jmeter2_ssh_host "./payloads/generate-payloads.sh"
+
 
 write_server_metrics() {
     server=$1
@@ -85,8 +98,11 @@ do
             for u in ${concurrent_users[@]}
             do
                 for msize in ${message_size[@]}
-                do
-                    report_location=$PWD/results/${heap}_heap/${bal_file}_bal/${ballerina_flags_name[$COUNTER]}_flags/${u}_users/${msize}B
+                do	    
+		    #requests served by two jmeter servers
+            	      total_users=$(($u * 2))
+ 
+                    report_location=$PWD/results/${heap}_heap/${bal_file}_bal/${ballerina_flags_name[$COUNTER]}_flags/${total_users}_users/${msize}B
 
                     echo "Report location is ${report_location}"
                     mkdir -p $report_location
@@ -94,33 +110,43 @@ do
                     echo "Starting ballerina Service"
                     ssh $ballerina_ssh_host "./ballerina-scripts/ballerina-start.sh $heap $bal_file $bal_flags"
 
-                    echo "Starting Jmeter server"
+		    echo "Starting Backend Service"
+		    ssh $backend_ssh_host "./netty-service/netty-start.sh $sleep_time $netty_port"
+
+                    echo "Starting Remote Jmeter server"
+		    ssh $jmeter1_ssh_host "./jmeter/jmeter-server-start.sh $jmeter1_host"
+                    ssh $jmeter2_ssh_host "./jmeter/jmeter-server-start.sh $jmeter2_host"
 
                     export JVM_ARGS="-Xms2g -Xmx2g -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$report_location/jmeter_gc.log"
-                    echo "# Running JMeter. Concurrent Users: $u Duration: $test_duration JVM Args: $JVM_ARGS" Ballerina host: $ballerina_host Path: $api_path Flags: $bal_flags
+                    echo "# Running JMeter. Concurrent Users: $total_users Duration: $test_duration JVM Args: $JVM_ARGS" Ballerina host: $ballerina_host Path: $api_path Flags: $bal_flags
 
                     # TODO Hard coded to use GET requests for helloworld.bal and POST requests for others
                     if [[ ${bal_file} == "helloworld.bal" ]]; then
                         echo "Using GET request jmx"
                         jmeter -n -t $HOME/jmeter-scripts/get-request-test.jmx \
-                            -Jusers=$u -Jduration=$test_duration -Jhost=$ballerina_host -Jport=9090 -Jpath=$api_path \
-                            -Jprotocol=http -l ${report_location}/results.jtl
+                            -Gusers=$u -Gduration=$test_duration -Ghost=$ballerina_host -Gport=9090 -Gpath=$api_path \
+                            -Gprotocol=http -l ${report_location}/results.jtl
                     else
                         echo "Using POST request jmx"
-                        jmeter -n -t $HOME/jmeter-scripts/post-request-test.jmx \
-                            -Jusers=$u -Jduration=$test_duration -Jhost=$ballerina_host -Jport=9090 -Jpath=$api_path \
-                            -Jpayload=$HOME/${msize}B.json -Jresponse_size=${msize}B \
-                            -Jprotocol=http -l ${report_location}/results.jtl
+                        jmeter -n -t $HOME/jmeter-scripts/post-request-test.jmx -R $jmeter1_host,$jmeter2_host -X \
+                            -Gusers=$u -Gduration=$test_duration -Ghost=$ballerina_host -Gport=9090 -Gpath=$api_path \
+                            -Gpayload=$HOME/${msize}B.json -Gresponse_size=${msize}B \
+                            -Gprotocol=http -l ${report_location}/results.jtl
                     fi
 
                     echo "Writing Server Metrics"
                     write_server_metrics jmeter
                     write_server_metrics ballerina $ballerina_ssh_host ballerina/bre
+		    write_server_metrics netty $backend_ssh_host netty
+		    write_server_metrics jmeter1 $jmeter1_ssh_host
+                    write_server_metrics jmeter2 $jmeter2_ssh_host
 
                     $HOME/jtl-splitter/jtl-splitter.sh ${report_location}/results.jtl $warmup_time
                     echo "Generating Dashboard for Warmup Period"
+		    mkdir $report_location/dashboard-warmup
                     jmeter -g ${report_location}/results-warmup.jtl -o $report_location/dashboard-warmup
                     echo "Generating Dashboard for Measurement Period"
+		    mkdir $report_location/dashboard-measurement
                     jmeter -g ${report_location}/results-measurement.jtl -o $report_location/dashboard-measurement
 
                     echo "Zipping JTL files in ${report_location}"
@@ -128,6 +154,10 @@ do
 
                     scp $ballerina_ssh_host:ballerina/logs/ballerina.log ${report_location}/ballerina.log
                     scp $ballerina_ssh_host:ballerina/logs/gc.log ${report_location}/ballerina_gc.log
+		    scp $backend_ssh_host:netty-service/logs/netty.log ${report_location}/netty.log
+                    scp $backend_ssh_host:netty-service/logs/nettygc.log ${report_location}/netty_gc.log
+		    scp $jmeter1_ssh_host:jmetergc.log ${report_location}/jmeter1_gc.log
+                    scp $jmeter2_ssh_host:jmetergc.log ${report_location}/jmeter2_gc.log
                  done
             done
         done
