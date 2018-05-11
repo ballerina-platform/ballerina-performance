@@ -42,14 +42,14 @@ if [[ ! -f $filename ]]; then
     echo -n "# Samples","Error Count","Error %","Average (ms)","Min (ms)","Max (ms)", >> $filename
     echo -n "90th Percentile (ms)","95th Percentile (ms)","99th Percentile (ms)","Throughput", >> $filename
     echo -n "Received (KB/sec)","Sent (KB/sec)" >> $filename
-    echo -n $(get_gc_headers "API Manager") >> $filename
+    echo -n $(get_gc_headers "Ballerina") >> $filename
     if [ "$include_all" = true ] ; then
         echo -n $(get_gc_headers "Netty Service") >> $filename
         echo -n $(get_gc_headers "JMeter Client") >> $filename
         echo -n $(get_gc_headers "JMeter Server 01") >> $filename
         echo -n $(get_gc_headers "JMeter Server 02") >> $filename
     fi
-    echo -n $(get_loadavg_headers "API Manager") >> $filename
+    echo -n $(get_loadavg_headers "Ballerina") >> $filename
     if [ "$include_all" = true ] ; then
         echo -n $(get_loadavg_headers "Netty Service") >> $filename
         echo -n $(get_loadavg_headers "JMeter Client") >> $filename
@@ -74,7 +74,7 @@ get_value_from_gc_summary() {
 }
 
 write_gc_summary_details() {
-    gc_log_file=$user_dir/$1_gc.log
+    gc_log_file=$message_size_dir/$1_gc.log
     gc_summary_file=/tmp/gc.txt
     echo "Reading $gc_log_file"
     java -Xms128m -Xmx128m -jar $gcviewer_path $gc_log_file $gc_summary_file -t SUMMARY &> /dev/null
@@ -85,7 +85,7 @@ write_gc_summary_details() {
 }
 
 write_loadavg_details() {
-    loadavg_file=$user_dir/$1_loadavg.txt
+    loadavg_file=$message_size_dir/$1_loadavg.txt
     if [[ -f $loadavg_file ]]; then
         echo "Reading $loadavg_file"
         loadavg_values=$(tail -2 $loadavg_file | head -1)
