@@ -38,7 +38,7 @@ get_loadavg_headers() {
 filename="summary.csv"
 if [[ ! -f $filename ]]; then
     # Create File and save headers
-    echo -n "Heap Size", "Ballerina File", "Observability", "Concurrent Users", "Message Size (Bytes)", > $filename
+    echo -n "Heap Size","Ballerina File","Observability","Concurrent Users","Message Size (Bytes)", > $filename
     echo -n "# Samples","Error Count","Error %","Average (ms)","Min (ms)","Max (ms)", >> $filename
     echo -n "90th Percentile (ms)","95th Percentile (ms)","99th Percentile (ms)","Throughput", >> $filename
     echo -n "Received (KB/sec)","Sent (KB/sec)" >> $filename
