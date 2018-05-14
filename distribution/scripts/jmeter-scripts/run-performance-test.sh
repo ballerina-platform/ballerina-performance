@@ -36,6 +36,7 @@ ballerina_files=("passthrough.bal")
 ballerina_flags=("\ ")
 ballerina_flags_name=("default")
 ballerina_heap_size=(1G 250M)
+backend_sleep_time=(0 30 500 1000)
 
 ballerina_host=10.42.0.6
 api_path=/passthrough
@@ -101,8 +102,11 @@ do
                 do	    
 		    #requests served by two jmeter servers
             	      total_users=$(($u * 2))
+
+		    for sleep_time in ${backend_sleep_time[@]}
+   	            do
  
-                    report_location=$PWD/results/${heap}_heap/${bal_file}_bal/${ballerina_flags_name[$COUNTER]}_flags/${total_users}_users/${msize}B
+                    report_location=$PWD/results/${heap}_heap/${bal_file}_bal/${ballerina_flags_name[$COUNTER]}_flags/${total_users}_users/${msize}B/${sleep_time}ms_sleep
 
                     echo "Report location is ${report_location}"
                     mkdir -p $report_location
@@ -158,7 +162,8 @@ do
                     scp $backend_ssh_host:netty-service/logs/nettygc.log ${report_location}/netty_gc.log
 		    scp $jmeter1_ssh_host:jmetergc.log ${report_location}/jmeter1_gc.log
                     scp $jmeter2_ssh_host:jmetergc.log ${report_location}/jmeter2_gc.log
-                 done
+		    done                 
+		done
             done
         done
     done

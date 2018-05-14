@@ -38,7 +38,7 @@ get_loadavg_headers() {
 filename="summary.csv"
 if [[ ! -f $filename ]]; then
     # Create File and save headers
-    echo -n "Heap Size","Ballerina File","Observability","Concurrent Users","Message Size (Bytes)", > $filename
+    echo -n "Heap Size","Ballerina File","Observability","Concurrent Users","Message Size (Bytes)","Sleep Time (ms)", > $filename
     echo -n "# Samples","Error Count","Error %","Average (ms)","Min (ms)","Max (ms)", >> $filename
     echo -n "90th Percentile (ms)","95th Percentile (ms)","99th Percentile (ms)","Throughput", >> $filename
     echo -n "Received (KB/sec)","Sent (KB/sec)" >> $filename
@@ -112,8 +112,13 @@ do
                 echo "user_dir" + $user_dir
                 for message_size_dir in $(find $user_dir -maxdepth 1 -name '*B' | sort -V)
                 do
-                    echo "message_size_dir" + $message_size_dir
-                    dashboard_data_file=$message_size_dir/dashboard-measurement/content/js/dashboard.js
+
+		echo "message_size_dir" + $message_size_dir
+                for sleep_time_dir in $(find $message_size_dir -maxdepth 1 -name '*ms_sleep' | sort -V)
+                do
+
+                    echo "sleep_time_dir" + $sleep_time_dir
+                    dashboard_data_file=$sleep_time_dir/dashboard-measurement/content/js/dashboard.js
                     if [[ ! -f $dashboard_data_file ]]; then
                         echo "WARN: Dashboard data file not found: $dashboard_data_file"
                         continue
@@ -126,8 +131,9 @@ do
                     flags=$(echo $flags_dir | sed -nE 's/.*\/([[:alnum:]]+)_flags.*/\1/p')
                     concurrent_users=$(echo $user_dir | sed -r 's/.*\/([0-9]+)_users.*/\1/')
                     message_size=$(echo $message_size_dir | sed -r 's/.*\/([0-9]+)B.*/\1/')
+		    sleep_time=$(echo $sleep_time_dir | sed -r 's/.*\/([0-9]+)ms_sleep.*/\1/')
 
-                    echo -n "$heap_size,$bal_file,$flags,$concurrent_users,$message_size" >> $filename
+                    echo -n "$heap_size,$bal_file,$flags,$concurrent_users,$message_size,$sleep_time" >> $filename
                     write_column "$statisticsTableData" 1
                     write_column "$statisticsTableData" 2
                     write_column "$statisticsTableData" 3
@@ -158,7 +164,8 @@ do
                     fi
 
                     echo -ne "\r\n" >> $filename
-                done
+                   done
+		done
             done
         done
     done
