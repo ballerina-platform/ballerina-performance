@@ -74,7 +74,7 @@ get_value_from_gc_summary() {
 }
 
 write_gc_summary_details() {
-    gc_log_file=$message_size_dir/$1_gc.log
+    gc_log_file=$sleep_time_dir/$1_gc.log
     gc_summary_file=/tmp/gc.txt
     echo "Reading $gc_log_file"
     java -Xms128m -Xmx128m -jar $gcviewer_path $gc_log_file $gc_summary_file -t SUMMARY &> /dev/null
@@ -85,7 +85,7 @@ write_gc_summary_details() {
 }
 
 write_loadavg_details() {
-    loadavg_file=$message_size_dir/$1_loadavg.txt
+    loadavg_file=$sleep_time_dir/$1_loadavg.txt
     if [[ -f $loadavg_file ]]; then
         echo "Reading $loadavg_file"
         loadavg_values=$(tail -2 $loadavg_file | head -1)
