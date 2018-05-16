@@ -127,7 +127,7 @@ do
 
                     echo "Getting data from $dashboard_data_file"
                     heap_size=$(echo $heap_size_dir | sed -r 's/.\/([0-9]+[a-zA-Z])_heap.*/\1/')
-                    bal_file=$(echo $bal_file_dir | sed -nE 's/.*\/([[:alnum:]]+.bal)_bal.*/\1/p')
+                    bal_file=$(echo $bal_file_dir | sed -nE 's/.*\/([[:alnum:]_]+.bal)_bal.*/\1/p')
                     flags=$(echo $flags_dir | sed -nE 's/.*\/([[:alnum:]]+)_flags.*/\1/p')
                     concurrent_users=$(echo $user_dir | sed -r 's/.*\/([0-9]+)_users.*/\1/')
                     message_size=$(echo $message_size_dir | sed -r 's/.*\/([0-9]+)B.*/\1/')

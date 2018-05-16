@@ -47,7 +47,7 @@ mkdir -p ballerina_path/logs/
 
 # TODO: Parameterize the ballerina files being copied
 mv $ballerina_path $HOME/ballerina
-cp $script_dir/bal/helloworld.bal $HOME/ballerina/bin
+cp $script_dir/bal/https_passthrough.bal $HOME/ballerina/bin
 cp $script_dir/bal/transformation.bal $HOME/ballerina/bin
 cp $script_dir/bal/passthrough.bal $HOME/ballerina/bin
 

@@ -31,7 +31,7 @@ export PATH=$JMETER_HOME/bin:$PATH
 
 message_size=(50 1024 10240)
 concurrent_users=(50 100 500)
-ballerina_files=("passthrough.bal")
+ballerina_files=("passthrough.bal" "https_passthrough.bal")
 # Only the default ballerina flag is configured, this can be extended by adding the other required ballerina flags
 ballerina_flags=("\ ")
 ballerina_flags_name=("default")
@@ -88,10 +88,10 @@ do
     for bal_file in ${ballerina_files[@]}
     do
         # TODO Hard coded helloworld.bal to use only message size 50
-        if [[ ${bal_file} == "helloworld.bal" ]]; then
-            echo "Hello World file executing hence only one message size"
-            message_size=(50)
-        fi
+        #if [[ ${bal_file} == "helloworld.bal" ]]; then
+           # echo "Hello World file executing hence only one message size"
+           # message_size=(50)
+        #fi
         COUNTER=-1
         for bal_flags in "${ballerina_flags[@]}"
         do
@@ -125,11 +125,12 @@ do
                     echo "# Running JMeter. Concurrent Users: $total_users Duration: $test_duration JVM Args: $JVM_ARGS" Ballerina host: $ballerina_host Path: $api_path Flags: $bal_flags
 
                     # TODO Hard coded to use GET requests for helloworld.bal and POST requests for others
-                    if [[ ${bal_file} == "helloworld.bal" ]]; then
-                        echo "Using GET request jmx"
-                        jmeter -n -t $HOME/jmeter-scripts/get-request-test.jmx \
+                    if [[ ${bal_file} == "https_passthrough.bal" ]]; then
+                        echo "Using HTTPS POST request jmx"
+                        jmeter -n -t $HOME/jmeter-scripts/post-request-test.jmx -R $jmeter1_host,$jmeter2_host -X \
                             -Gusers=$u -Gduration=$test_duration -Ghost=$ballerina_host -Gport=9090 -Gpath=$api_path \
-                            -Gprotocol=http -l ${report_location}/results.jtl
+			    -Gpayload=$HOME/${msize}B.json -Gresponse_size=${msize}B \
+                            -Gprotocol=https -l ${report_location}/results.jtl
                     else
                         echo "Using POST request jmx"
                         jmeter -n -t $HOME/jmeter-scripts/post-request-test.jmx -R $jmeter1_host,$jmeter2_host -X \
