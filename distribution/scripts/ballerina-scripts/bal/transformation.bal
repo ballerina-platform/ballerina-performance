@@ -1,23 +1,38 @@
 import ballerina/http;
 
-endpoint http:Listener storeServiceEndpoint {
+endpoint http:Listener passthroughEP {
     port:9090
 };
 
-@http:ServiceConfig {
-    basePath:"/HelloWorld"
-}
-service HelloWorld bind storeServiceEndpoint {
+endpoint http:Client nettyEP {
+    url:"http://netty:8688"
+};
+
+@http:ServiceConfig {basePath:"/passthrough"}
+service<http:Service> passthroughService bind passthroughEP {
+
     @http:ResourceConfig {
         methods:["POST"],
-        path:"/sayHello"
+        path:"/"
     }
-    sayHello(endpoint outboundEP, http:Request req) {
-
-        json payload = req.getJsonPayload() but {error => {}};
+    passthrough (endpoint outboundEP, http:Request req) {
+	json payload = req.getJsonPayload() but {error => {}};
         xml xmlPayload = check payload.toXML({});
-        http:Response res = new;
-        res.setXmlPayload(xmlPayload);
-        _ = outboundEP -> respond(res);
+	http:Request clinetreq = new;
+        clinetreq.setXmlPayload(xmlPayload);
+
+        var response = nettyEP -> post("/service/EchoService", request = clinetreq);
+        match response {
+            http:Response httpResponse => {
+                _ = outboundEP -> respond(httpResponse);
+            }
+            http:error err => {
+                http:Response errorResponse = new;
+                json errMsg = {"error":"error occurred while invoking the service"};
+                errorResponse.setJsonPayload(errMsg);
+                _ = outboundEP -> respond(errorResponse);
+            }
+        }
     }
 }
+
