@@ -126,8 +126,8 @@ do
                     export JVM_ARGS="-Xms2g -Xmx2g -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$report_location/jmeter_gc.log"
                     echo "# Running JMeter. Concurrent Users: $total_users Duration: $test_duration JVM Args: $JVM_ARGS" Ballerina host: $ballerina_host Path: $api_path Flags: $bal_flags
 
-                    # TODO Hard coded to use GET requests for helloworld.bal and POST requests for others
-                    if [[ ${bal_file} == "https_passthrough.bal" ]]; then
+                    # Requests for HTTPS services
+		    if [ ${bal_file} == "https_passthrough.bal" ] || [ ${bal_file} == "https_transformation.bal" ]; then
                         echo "Using HTTPS POST request jmx"
                         jmeter -n -t $HOME/jmeter-scripts/post-request-test.jmx -R $jmeter1_host,$jmeter2_host -X \
                             -Gusers=$u -Gduration=$test_duration -Ghost=$ballerina_host -Gport=9090 -Gpath=$api_path \
