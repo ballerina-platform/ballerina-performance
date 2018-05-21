@@ -50,6 +50,8 @@ jmeter2_host=192.168.32.13
 jmeter1_ssh_host=jmeter1
 jmeter2_ssh_host=jmeter2
 
+payload_type=ARRAY
+
 # Test Duration in seconds
 test_duration=600
 
@@ -60,9 +62,9 @@ mkdir results
 cp $0 results
 
 echo "Generating Payloads in $jmeter1_host"
-ssh $jmeter1_ssh_host "./payloads/generate-payloads.sh"
+ssh $jmeter1_ssh_host "./payloads/generate-payloads.sh" $payload_type
 echo "Generating Payloads in $jmeter2_host"
-ssh $jmeter2_ssh_host "./payloads/generate-payloads.sh"
+ssh $jmeter2_ssh_host "./payloads/generate-payloads.sh" $payload_type
 
 
 write_server_metrics() {
