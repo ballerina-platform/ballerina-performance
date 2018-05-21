@@ -31,7 +31,7 @@ export PATH=$JMETER_HOME/bin:$PATH
 
 message_size=(50 1024 10240)
 concurrent_users=(50 100 500)
-ballerina_files=("passthrough.bal" "https_passthrough.bal")
+ballerina_files=("passthrough.bal" "https_passthrough.bal" "transformation.bal" "https_transformation.bal")
 # Only the default ballerina flag is configured, this can be extended by adding the other required ballerina flags
 ballerina_flags=("\ ")
 ballerina_flags_name=("default")
