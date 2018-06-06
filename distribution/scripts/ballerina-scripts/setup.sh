@@ -52,6 +52,7 @@ cp $script_dir/bal/https_passthrough.bal $HOME/ballerina/bin
 cp $script_dir/bal/transformation.bal $HOME/ballerina/bin
 cp $script_dir/bal/https_transformation.bal $HOME/ballerina/bin
 cp $script_dir/bal/http2_https_passthrough.bal $HOME/ballerina/bin
+cp $script_dir/bal/websocket.bal $HOME/ballerina/bin
 
 #Add Netty Host to /etc/hosts
 sudo -s <<EOF

@@ -31,7 +31,7 @@ export PATH=$JMETER_HOME/bin:$PATH
 
 message_size=(50 1024 10240)
 concurrent_users=(50 100 500)
-ballerina_files=("passthrough.bal" "https_passthrough.bal" "transformation.bal" "https_transformation.bal" "http2_https_passthrough.bal")
+ballerina_files=("passthrough.bal" "https_passthrough.bal" "transformation.bal" "https_transformation.bal" "http2_https_passthrough.bal" "websocket.bal")
 # Only the default ballerina flag is configured, this can be extended by adding the other required ballerina flags
 ballerina_flags=("\ ")
 ballerina_flags_name=("default")
@@ -40,6 +40,7 @@ backend_sleep_time=(0 30 500 1000)
 
 ballerina_host=10.42.0.6
 api_path=/passthrough
+websocket_path=/basic/ws
 ballerina_ssh_host=ballerina
 
 backend_ssh_host=netty
@@ -111,9 +112,11 @@ do
                     echo "Starting ballerina Service"
                     ssh $ballerina_ssh_host "./ballerina-scripts/ballerina-start.sh $heap $bal_file $bal_flags"
 
+		    if [[ ${bal_file} != "websocket.bal" ]]; then
 		    echo "Starting Backend Service"
 		    ssh $backend_ssh_host "./netty-service/netty-start.sh $sleep_time $netty_port"
-
+		    fi		
+		
                     echo "Starting Remote Jmeter server"
 		    ssh $jmeter1_ssh_host "./jmeter/jmeter-server-start.sh $jmeter1_host"
                     ssh $jmeter2_ssh_host "./jmeter/jmeter-server-start.sh $jmeter2_host"
@@ -135,6 +138,14 @@ do
                             -Gusers=$u -Gduration=$test_duration -Ghost=$ballerina_host -Gport=9090 -Gpath=$api_path \
                             -Gpayload=$HOME/${msize}B.json -Gresponse_size=${msize}B \
                             -Gprotocol=https -l ${report_location}/results.jtl
+
+		    elif [[ ${bal_file} == "websocket.bal" ]]; then
+                     echo "Using Websocket Request Response jmx"
+                        jmeter -n -t $HOME/jmeter-scripts/websocket-test.jmx -R $jmeter1_host,$jmeter2_host -X \
+                            -Gusers=$u -Gduration=$test_duration -Ghost=$ballerina_host -Gport=9090 -Gpath=$websocket_path \
+                            -Gpayload=$HOME/${msize}B.json -Gresponse_size=${msize}B \
+                            -l ${report_location}/results.jtl
+
                     else
                         echo "Using POST request jmx"
                         jmeter -n -t $HOME/jmeter-scripts/post-request-test.jmx -R $jmeter1_host,$jmeter2_host -X \
