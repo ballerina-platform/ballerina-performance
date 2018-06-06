@@ -22,7 +22,7 @@ service<http:Service> passthroughService bind passthroughEP {
         path:"/"
     }
     passthrough (endpoint outboundEP, http:Request clientRequest) {
-        var response = nettyEP -> post("/service/EchoService", request = clientRequest);
+        var response = nettyEP -> forward("/service/EchoService", clientRequest);
         match response {
             http:Response httpResponse => {
                 _ = outboundEP -> respond(httpResponse);
