@@ -74,7 +74,12 @@ get_value_from_gc_summary() {
 }
 
 write_gc_summary_details() {
-    gc_log_file=$sleep_time_dir/$1_gc.log
+   #Verify whether sleep time directory is available
+   if [ ! -z  "$(find $message_size_dir -maxdepth 1 -name '*ms_sleep' )" ]; then
+       gc_log_file=$sleep_time_dir/$1_gc.log
+    else
+       gc_log_file=$message_size_dir/$1_gc.log
+    fi
     gc_summary_file=/tmp/gc.txt
     echo "Reading $gc_log_file"
     java -Xms128m -Xmx128m -jar $gcviewer_path $gc_log_file $gc_summary_file -t SUMMARY &> /dev/null
@@ -85,7 +90,12 @@ write_gc_summary_details() {
 }
 
 write_loadavg_details() {
-    loadavg_file=$sleep_time_dir/$1_loadavg.txt
+    #Verify whether sleep time directory is available
+    if [ ! -z  "$(find $message_size_dir -maxdepth 1 -name '*ms_sleep' )" ]; then
+       loadavg_file=$sleep_time_dir/$1_loadavg.txt
+    else
+       loadavg_file=$message_size_dir/$1_loadavg.txt
+    fi
     if [[ -f $loadavg_file ]]; then
         echo "Reading $loadavg_file"
         loadavg_values=$(tail -2 $loadavg_file | head -1)
@@ -114,6 +124,9 @@ do
                 do
 
 		echo "message_size_dir" + $message_size_dir
+		
+		if [ ! -z  "$(find $message_size_dir -maxdepth 1 -name '*ms_sleep' )" ]; then
+
                 for sleep_time_dir in $(find $message_size_dir -maxdepth 1 -name '*ms_sleep' | sort -V)
                 do
 
@@ -165,7 +178,55 @@ do
 
                     echo -ne "\r\n" >> $filename
                    done
-		done
+		else
+		   dashboard_data_file=$message_size_dir/dashboard-measurement/content/js/dashboard.js
+                    if [[ ! -f $dashboard_data_file ]]; then
+                        echo "WARN: Dashboard data file not found: $dashboard_data_file"
+                        continue
+                    fi
+                    statisticsTableData=$(grep '#statisticsTable' $dashboard_data_file | sed  's/^.*"#statisticsTable"), \({.*}\).*$/\1/')
+
+                    echo "Getting data from $dashboard_data_file"
+                    heap_size=$(echo $heap_size_dir | sed -r 's/.\/([0-9]+[a-zA-Z])_heap.*/\1/')
+                    bal_file=$(echo $bal_file_dir | sed -nE 's/.*\/([[:alnum:]_]+.bal)_bal.*/\1/p')
+                    flags=$(echo $flags_dir | sed -nE 's/.*\/([[:alnum:]]+)_flags.*/\1/p')
+                    concurrent_users=$(echo $user_dir | sed -r 's/.*\/([0-9]+)_users.*/\1/')
+                    message_size=$(echo $message_size_dir | sed -r 's/.*\/([0-9]+)B.*/\1/')
+		    sleep_time=$(echo 'N/A')
+
+                    echo -n "$heap_size,$bal_file,$flags,$concurrent_users,$message_size,$sleep_time" >> $filename
+                    write_column "$statisticsTableData" 1
+                    write_column "$statisticsTableData" 2
+                    write_column "$statisticsTableData" 3
+                    write_column "$statisticsTableData" 4
+                    write_column "$statisticsTableData" 5
+                    write_column "$statisticsTableData" 6
+                    write_column "$statisticsTableData" 7
+                    write_column "$statisticsTableData" 8
+                    write_column "$statisticsTableData" 9
+                    write_column "$statisticsTableData" 10
+                    write_column "$statisticsTableData" 11
+                    write_column "$statisticsTableData" 12
+
+                    write_gc_summary_details ballerina
+                    if [ "$include_all" = true ] ; then
+                        write_gc_summary_details netty
+                        write_gc_summary_details jmeter
+                        write_gc_summary_details jmeter1
+                        write_gc_summary_details jmeter2
+                    fi
+
+                    write_loadavg_details ballerina
+                    if [ "$include_all" = true ] ; then
+                        write_loadavg_details netty
+                        write_loadavg_details jmeter
+                        write_loadavg_details jmeter1
+                        write_loadavg_details jmeter2
+                    fi
+
+                    echo -ne "\r\n" >> $filename
+	        fi
+              done
             done
         done
     done
