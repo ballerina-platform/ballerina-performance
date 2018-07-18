@@ -1,0 +1,267 @@
+# ----------------------------------------------------------------------------
+#
+# Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# WSO2 Inc. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# ----------------------------------------------------------------------------
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  WSO2 Identity Server single node deployment with puppet master agent setup
+##############################################################################################
+# Mappings for Ubuntu AMIs
+# Refer https://cloud-images.ubuntu.com/locator/ec2/ for ubuntu AMI-ID's for the LTS version
+##############################################################################################
+Mappings:
+  RegionMap:
+    ap-northeast-1:
+      AMI: ami-2f2d9c49
+    ap-northeast-2:
+      AMI: ami-e49e398a
+    ap-south-1:
+      AMI: ami-46eea129
+    ap-southeast-1:
+      AMI: ami-84a6f3e7
+    ap-southeast-2:
+      AMI: ami-4cc8232e
+    ca-central-1:
+      AMI: ami-338b3057
+    eu-central-1:
+      AMI: ami-e22aaa8d
+    eu-west-1:
+      AMI: ami-2e832957
+    eu-west-2:
+      AMI: ami-3fc8d75b
+    sa-east-1:
+      AMI: ami-981550f4
+    us-east-1:
+      AMI: ami-c29e1cb8
+    us-east-2:
+      AMI: ami-f0f8d695
+    us-west-1:
+      AMI: ami-8b90a9eb
+    us-west-2:
+      AMI: ami-25cf1c5d
+
+#############################
+# User inputs
+#############################
+
+################################
+# Create AWS resources
+################################
+Resources:
+  ##############################
+  # Create VPC and subnets
+  ##############################
+  WSO2EnvVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      InstanceTenancy: default
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Name
+          Value: wso2-vpc
+  WSO2EnvPrivateSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      VpcId: !Ref WSO2EnvVPC
+      Tags:
+        - Key: Name
+          Value: wso2-private-subnet-1
+  WSO2EnvPublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.254.0/24
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      VpcId: !Ref WSO2EnvVPC
+      Tags:
+        - Key: Name
+          Value: wso2-public-subnet-1
+  WSO2EnvInternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties: {}
+  WSO2EnvPublicRouteTable1:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref WSO2EnvVPC
+  WSO2EnvRouteTable2:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref WSO2EnvVPC
+  WSO2EnvJmeterClientEIPAssociation:
+    Type: 'AWS::EC2::EIPAssociation'
+    Properties:
+      AllocationId: !GetAtt WSO2EnvJmeterClientEIP.AllocationId
+      InstanceId: !Ref WSO2JmeterclientInstance
+
+  ################################
+  # Create network configurations
+  ################################
+
+  gw1:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref WSO2EnvVPC
+      InternetGatewayId: !Ref WSO2EnvInternetGateway
+  subnetroute1:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref WSO2EnvPublicRouteTable1
+      SubnetId: !Ref WSO2EnvPublicSubnet1
+  subnetroute3:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref WSO2EnvRouteTable2
+      SubnetId: !Ref WSO2EnvPrivateSubnet1
+  route1:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref WSO2EnvPublicRouteTable1
+      GatewayId: !Ref WSO2EnvInternetGateway
+    DependsOn: gw1
+  #########################
+  # Create security groups
+  #########################
+  WSO2EnvInstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for IS EC2 compute instances
+      VpcId: !Ref WSO2EnvVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8140
+        ToPort: 8140
+        CidrIp: !GetAtt WSO2EnvVPC.CidrBlock
+
+  ###########################
+  # Create Elastic IPs
+  ###########################
+  WSO2EnvJmeterClientEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+  
+  #######################
+  # EC2 Compute instances
+  #######################
+  WSO2JmeterclientInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: ami-f0f8d695
+      InstanceType: t2.micro
+      KeyName: ballerinaPT-key-pair-useast2
+      Monitoring: 'false'
+      Tags:
+        - Key: Name
+          Value: JmeterclientInstance
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          Description: Primary network interface
+          DeviceIndex: 0
+          SubnetId: !Ref WSO2EnvPublicSubnet1
+          GroupSet:
+            - !Ref WSO2EnvInstanceSecurityGroup
+  WSO2Jmeterserver1Instance:
+      Type: 'AWS::EC2::Instance'
+      Properties:
+        DisableApiTermination: 'false'
+        InstanceInitiatedShutdownBehavior: stop
+        ImageId: ami-f0f8d695
+        InstanceType: t2.micro
+        KeyName: ballerinaPT-key-pair-useast2
+        Monitoring: 'false'
+        Tags:
+          - Key: Name
+            Value: Jmeterserver1Instance
+        NetworkInterfaces:
+          - DeleteOnTermination: 'true'
+            Description: Primary network interface
+            DeviceIndex: 0
+            SubnetId: !Ref WSO2EnvPrivateSubnet1
+            GroupSet:
+              - !Ref WSO2EnvInstanceSecurityGroup
+  WSO2Jmeterserver2Instance:
+      Type: 'AWS::EC2::Instance'
+      Properties:
+        DisableApiTermination: 'false'
+        InstanceInitiatedShutdownBehavior: stop
+        ImageId: ami-f0f8d695
+        InstanceType: t2.micro
+        KeyName: ballerinaPT-key-pair-useast2
+        Monitoring: 'false'
+        Tags:
+          - Key: Name
+            Value: Jmeterserver2Instance
+        NetworkInterfaces:
+          - DeleteOnTermination: 'true'
+            Description: Primary network interface
+            DeviceIndex: 0
+            SubnetId: !Ref WSO2EnvPrivateSubnet1
+            GroupSet:
+              - !Ref WSO2EnvInstanceSecurityGroup
+  WSO2BallerinaInstance:
+        Type: 'AWS::EC2::Instance'
+        Properties:
+          DisableApiTermination: 'false'
+          InstanceInitiatedShutdownBehavior: stop
+          ImageId: ami-f0f8d695
+          InstanceType: t2.micro
+          KeyName: ballerinaPT-key-pair-useast2
+          Monitoring: 'false'
+          Tags:
+            - Key: Name
+              Value: JmeterballerinaInstance
+          NetworkInterfaces:
+            - DeleteOnTermination: 'true'
+              Description: Primary network interface
+              DeviceIndex: 0
+              SubnetId: !Ref WSO2EnvPrivateSubnet1
+              GroupSet:
+                - !Ref WSO2EnvInstanceSecurityGroup
+  WSO2BackendInstance:
+        Type: 'AWS::EC2::Instance'
+        Properties:
+          DisableApiTermination: 'false'
+          InstanceInitiatedShutdownBehavior: stop
+          ImageId: ami-f0f8d695
+          InstanceType: t2.micro
+          KeyName: ballerinaPT-key-pair-useast2
+          Monitoring: 'false'
+          Tags:
+            - Key: Name
+              Value: JmeterbackendInstance
+          NetworkInterfaces:
+            - DeleteOnTermination: 'true'
+              Description: Primary network interface
+              DeviceIndex: 0
+              SubnetId: !Ref WSO2EnvPrivateSubnet1
+              GroupSet:
+                - !Ref WSO2EnvInstanceSecurityGroup
