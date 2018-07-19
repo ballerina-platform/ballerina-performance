@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
 #
-# Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+# Copyright (c) 2018, WSO2 Inc. (http://wso2.org) All Rights Reserved.
 #
 # WSO2 Inc. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -18,250 +18,294 @@
 #
 # ----------------------------------------------------------------------------
 AWSTemplateFormatVersion: 2010-09-09
-Description: >
-  WSO2 Identity Server single node deployment with puppet master agent setup
+Description: >-
+  AWS CloudFormation Template to run Ballerina Performance Tests. This template
+  creates Amazon EC2 instance in a VPC. The JMeter Client EC2 instance will have
+  an an Elastic IP address.
+  **WARNING** This template creates multipe Amazon AWS resources. You will be
+  billed for the AWS resources used if you create a stack from this template.
 ##############################################################################################
-# Mappings for Ubuntu AMIs
+# Mappings for Ubuntu AMIs of Instance Type: hvm:ebs-ssd
 # Refer https://cloud-images.ubuntu.com/locator/ec2/ for ubuntu AMI-ID's for the LTS version
 ##############################################################################################
 Mappings:
-  RegionMap:
-    ap-northeast-1:
-      AMI: ami-2f2d9c49
-    ap-northeast-2:
-      AMI: ami-e49e398a
-    ap-south-1:
-      AMI: ami-46eea129
-    ap-southeast-1:
-      AMI: ami-84a6f3e7
-    ap-southeast-2:
-      AMI: ami-4cc8232e
-    ca-central-1:
-      AMI: ami-338b3057
-    eu-central-1:
-      AMI: ami-e22aaa8d
-    eu-west-1:
-      AMI: ami-2e832957
-    eu-west-2:
-      AMI: ami-3fc8d75b
-    sa-east-1:
-      AMI: ami-981550f4
+  AWSRegion2AMI:
     us-east-1:
-      AMI: ami-c29e1cb8
+      AMI: ami-759bc50a
     us-east-2:
-      AMI: ami-f0f8d695
+      AMI: ami-5e8bb23b
     us-west-1:
-      AMI: ami-8b90a9eb
+      AMI: ami-4aa04129
     us-west-2:
-      AMI: ami-25cf1c5d
-
+      AMI: ami-ba602bc2
 #############################
 # User inputs
 #############################
-
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  TestName:
+    Description: Name of the tests
+    Type: String
+    Default: Ballerina Performance Tests
+  JMeterClientInstanceType:
+    Description: JMeter Client EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m4.large
+      - m4.xlarge
+      - c3.large
+      - c3.xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  JMeterServer1InstanceType:
+    Description: JMeter Server 1 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m4.large
+      - m4.xlarge
+      - c3.large
+      - c3.xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  JMeterServer2InstanceType:
+    Description: JMeter Server 2 EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m4.large
+      - m4.xlarge
+      - c3.large
+      - c3.xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  BallerinaInstanceType:
+    Description: Ballerina EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m4.large
+      - m4.xlarge
+      - c3.large
+      - c3.xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  BackendInstanceType:
+    Description: Backend EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m4.large
+      - m4.xlarge
+      - c3.large
+      - c3.xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
 ################################
 # Create AWS resources
 ################################
 Resources:
   ##############################
-  # Create VPC and subnets
+  # Create VPC and subnet
   ##############################
-  WSO2EnvVPC:
+  VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 10.0.0.0/16
-      InstanceTenancy: default
-      EnableDnsSupport: 'true'
-      EnableDnsHostnames: 'true'
+      EnableDnsSupport: true
+      EnableDnsHostnames: false
       Tags:
         - Key: Name
-          Value: wso2-vpc
-  WSO2EnvPrivateSubnet1:
+          Value: !Join
+            - ':'
+            - - 'VPC'
+              - !Ref TestName
+  Subnet:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Select
-        - '0'
-        - !GetAZs ''
-      VpcId: !Ref WSO2EnvVPC
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/24
       Tags:
         - Key: Name
-          Value: wso2-private-subnet-1
-  WSO2EnvPublicSubnet1:
-    Type: 'AWS::EC2::Subnet'
-    Properties:
-      CidrBlock: 10.0.254.0/24
-      AvailabilityZone: !Select
-        - '0'
-        - !GetAZs ''
-      VpcId: !Ref WSO2EnvVPC
-      Tags:
-        - Key: Name
-          Value: wso2-public-subnet-1
-  WSO2EnvInternetGateway:
+          Value: !Join
+            - ':'
+            - - 'Subnet'
+              - !Ref TestName
+  InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
-    Properties: {}
-  WSO2EnvPublicRouteTable1:
-    Type: 'AWS::EC2::RouteTable'
     Properties:
-      VpcId: !Ref WSO2EnvVPC
-  WSO2EnvRouteTable2:
-    Type: 'AWS::EC2::RouteTable'
-    Properties:
-      VpcId: !Ref WSO2EnvVPC
-  WSO2EnvJmeterClientEIPAssociation:
-    Type: 'AWS::EC2::EIPAssociation'
-    Properties:
-      AllocationId: !GetAtt WSO2EnvJmeterClientEIP.AllocationId
-      InstanceId: !Ref WSO2JmeterclientInstance
-
-  ################################
-  # Create network configurations
-  ################################
-
-  gw1:
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ':'
+            - - 'InternetGateway'
+              - !Ref TestName
+  AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
-      VpcId: !Ref WSO2EnvVPC
-      InternetGatewayId: !Ref WSO2EnvInternetGateway
-  subnetroute1:
-    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  RouteTable:
+    Type: 'AWS::EC2::RouteTable'
     Properties:
-      RouteTableId: !Ref WSO2EnvPublicRouteTable1
-      SubnetId: !Ref WSO2EnvPublicSubnet1
-  subnetroute3:
-    Type: 'AWS::EC2::SubnetRouteTableAssociation'
-    Properties:
-      RouteTableId: !Ref WSO2EnvRouteTable2
-      SubnetId: !Ref WSO2EnvPrivateSubnet1
-  route1:
-    Type: 'AWS::EC2::Route'
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      RouteTableId: !Ref WSO2EnvPublicRouteTable1
-      GatewayId: !Ref WSO2EnvInternetGateway
-    DependsOn: gw1
-  #########################
-  # Create security groups
-  #########################
-  WSO2EnvInstanceSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Security group for IS EC2 compute instances
-      VpcId: !Ref WSO2EnvVPC
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 8140
-        ToPort: 8140
-        CidrIp: !GetAtt WSO2EnvVPC.CidrBlock
-
-  ###########################
-  # Create Elastic IPs
-  ###########################
-  WSO2EnvJmeterClientEIP:
-    Type: 'AWS::EC2::EIP'
-    Properties:
-      Domain: vpc
-  
-  #######################
-  # EC2 Compute instances
-  #######################
-  WSO2JmeterclientInstance:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      DisableApiTermination: 'false'
-      InstanceInitiatedShutdownBehavior: stop
-      ImageId: ami-f0f8d695
-      InstanceType: t2.micro
-      KeyName: ballerinaPT-key-pair-useast2
-      Monitoring: 'false'
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: JmeterclientInstance
+          Value: !Join
+            - ':'
+            - - 'RouteTable'
+              - !Ref TestName
+  Route:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  SubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref Subnet
+      RouteTableId: !Ref RouteTable
+  JMeterClientIPAddress:
+    Type: 'AWS::EC2::EIP'
+    DependsOn: AttachGateway
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref JMeterClientInstance
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Security Group for EC2 instances
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '0'
+          ToPort: '65535'
+          CidrIp: 0.0.0.0/0
+  #######################
+  # EC2 Instances
+  #######################
+  JMeterClientInstance:
+    Type: 'AWS::EC2::Instance'
+    DependsOn: [AttachGateway]
+    Properties:
+      ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
+      InstanceType: !Ref JMeterClientInstanceType
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ':'
+            - - 'JMeter Client'
+              - !Ref TestName
       NetworkInterfaces:
-        - DeleteOnTermination: 'true'
-          Description: Primary network interface
-          DeviceIndex: 0
-          SubnetId: !Ref WSO2EnvPublicSubnet1
-          GroupSet:
-            - !Ref WSO2EnvInstanceSecurityGroup
-  WSO2Jmeterserver1Instance:
-      Type: 'AWS::EC2::Instance'
-      Properties:
-        DisableApiTermination: 'false'
-        InstanceInitiatedShutdownBehavior: stop
-        ImageId: ami-f0f8d695
-        InstanceType: t2.micro
-        KeyName: ballerinaPT-key-pair-useast2
-        Monitoring: 'false'
-        Tags:
-          - Key: Name
-            Value: Jmeterserver1Instance
-        NetworkInterfaces:
-          - DeleteOnTermination: 'true'
-            Description: Primary network interface
-            DeviceIndex: 0
-            SubnetId: !Ref WSO2EnvPrivateSubnet1
-            GroupSet:
-              - !Ref WSO2EnvInstanceSecurityGroup
-  WSO2Jmeterserver2Instance:
-      Type: 'AWS::EC2::Instance'
-      Properties:
-        DisableApiTermination: 'false'
-        InstanceInitiatedShutdownBehavior: stop
-        ImageId: ami-f0f8d695
-        InstanceType: t2.micro
-        KeyName: ballerinaPT-key-pair-useast2
-        Monitoring: 'false'
-        Tags:
-          - Key: Name
-            Value: Jmeterserver2Instance
-        NetworkInterfaces:
-          - DeleteOnTermination: 'true'
-            Description: Primary network interface
-            DeviceIndex: 0
-            SubnetId: !Ref WSO2EnvPrivateSubnet1
-            GroupSet:
-              - !Ref WSO2EnvInstanceSecurityGroup
-  WSO2BallerinaInstance:
-        Type: 'AWS::EC2::Instance'
-        Properties:
-          DisableApiTermination: 'false'
-          InstanceInitiatedShutdownBehavior: stop
-          ImageId: ami-f0f8d695
-          InstanceType: t2.micro
-          KeyName: ballerinaPT-key-pair-useast2
-          Monitoring: 'false'
-          Tags:
-            - Key: Name
-              Value: JmeterballerinaInstance
-          NetworkInterfaces:
-            - DeleteOnTermination: 'true'
-              Description: Primary network interface
-              DeviceIndex: 0
-              SubnetId: !Ref WSO2EnvPrivateSubnet1
-              GroupSet:
-                - !Ref WSO2EnvInstanceSecurityGroup
-  WSO2BackendInstance:
-        Type: 'AWS::EC2::Instance'
-        Properties:
-          DisableApiTermination: 'false'
-          InstanceInitiatedShutdownBehavior: stop
-          ImageId: ami-f0f8d695
-          InstanceType: t2.micro
-          KeyName: ballerinaPT-key-pair-useast2
-          Monitoring: 'false'
-          Tags:
-            - Key: Name
-              Value: JmeterbackendInstance
-          NetworkInterfaces:
-            - DeleteOnTermination: 'true'
-              Description: Primary network interface
-              DeviceIndex: 0
-              SubnetId: !Ref WSO2EnvPrivateSubnet1
-              GroupSet:
-                - !Ref WSO2EnvInstanceSecurityGroup
+        - GroupSet:
+            - !Ref InstanceSecurityGroup
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref Subnet
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              apt update
+            - |
+              pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            - ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+            - '/opt/aws/bin/cfn-init -v '
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - '         --resource JMeterClientInstance '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - |+
+
+            - '/opt/aws/bin/cfn-signal -e $? '
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - '         --resource JMeterClientInstance '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - |+
+
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+  # JMeterServer1Instance:
+  #   Type: 'AWS::EC2::Instance'
+  #   DependsOn: AttachGateway
+  #   Properties:
+  #     ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
+  #     InstanceType: !Ref JMeterServer1InstanceType
+  #     KeyName: !Ref KeyName
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Join
+  #           - ':'
+  #           - - 'JMeter Server 1'
+  #             - !Ref TestName
+  #     NetworkInterfaces:
+  #       - GroupSet:
+  #           - !Ref InstanceSecurityGroup
+  #         AssociatePublicIpAddress: 'false'
+  #         DeviceIndex: '0'
+  #         DeleteOnTermination: 'true'
+  #         SubnetId: !Ref Subnet
+  #     UserData: !Base64 
+  #       'Fn::Join':
+  #         - ''
+  #         - - |
+  #             #!/bin/bash -xe
+  #           - |
+  #             apt install -y aws-cfn-bootstrap
+  #           - '/opt/aws/bin/cfn-init -v '
+  #           - '         --stack '
+  #           - !Ref 'AWS::StackName'
+  #           - '         --resource JMeterServer1Instance '
+  #           - '         --region '
+  #           - !Ref 'AWS::Region'
+  #           - |+
+
+  #           - '/opt/aws/bin/cfn-signal -e $? '
+  #           - '         --stack '
+  #           - !Ref 'AWS::StackName'
+  #           - '         --resource JMeterServer1Instance '
+  #           - '         --region '
+  #           - !Ref 'AWS::Region'
+  #           - |+
+
+  #   CreationPolicy:
+  #     ResourceSignal:
+  #       Timeout: PT15M
+Outputs:
+  URL:
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt 
+          - JMeterClientInstance
+          - PublicIp
+    Description: JMeter Client Public IP
