@@ -231,8 +231,8 @@ Resources:
           - - |
               #!/bin/bash -xe
               cd /home/ubuntu
-              sudo apt-get update
-              sudo apt-get install -y openjdk-8-jdk
+              apt-get update
+              apt-get install -y openjdk-8-jdk
               wget https://s3.us-east-2.amazonaws.com/ballerinaperformancetest/performance-ballerina/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz
               wget https://s3.us-east-2.amazonaws.com/ballerinaperformancetest/performance-common/performance-common-distribution-0.1.1-SNAPSHOT.tar.gz
               tar xzf performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz
