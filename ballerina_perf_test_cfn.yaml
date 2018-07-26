@@ -20,8 +20,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   AWS CloudFormation Template to run Ballerina Performance Tests. This template
-  creates Amazon EC2 instance in a VPC. The JMeter Client EC2 instance will have
-  an an Elastic IP address.
+  creates Amazon EC2 instance in a VPC. The JMeter Client EC2 instance will be in a
+  public subnet with a public IP. All other EC2 instances will be in a private subnet.
   **WARNING** This template creates multipe Amazon AWS resources. You will be
   billed for the AWS resources used if you create a stack from this template.
 ##############################################################################################
@@ -124,9 +124,11 @@ Parameters:
 # Create AWS resources
 ################################
 Resources:
-  ##############################
-  # Create VPC and subnet
-  ##############################
+  ##########################################################################################
+  # Create VPC, public subnet and private subnet
+  # https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Scenario2.html
+  # https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Internet_Gateway.html
+  ##########################################################################################
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -139,7 +141,8 @@ Resources:
             - ':'
             - - 'VPC'
               - !Ref TestName
-  Subnet:
+  # Configure Public Subnet
+  PublicSubnet:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
@@ -148,7 +151,7 @@ Resources:
         - Key: Name
           Value: !Join
             - ':'
-            - - 'Subnet'
+            - - 'PublicSubnet'
               - !Ref TestName
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
@@ -164,7 +167,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
-  RouteTable:
+  PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
       VpcId: !Ref VPC
@@ -172,42 +175,87 @@ Resources:
         - Key: Name
           Value: !Join
             - ':'
-            - - 'RouteTable'
+            - - 'PublicRouteTable'
               - !Ref TestName
-  Route:
+  PublicRoute:
     Type: 'AWS::EC2::Route'
     DependsOn: AttachGateway
     Properties:
-      RouteTableId: !Ref RouteTable
+      RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
-  SubnetRouteTableAssociation:
+  PublicSubnetRouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
-      SubnetId: !Ref Subnet
-      RouteTableId: !Ref RouteTable
-  JMeterClientIPAddress:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+  # Configure Private Subnet
+  PrivateSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ':'
+            - - 'PrivateSubnet'
+              - !Ref TestName
+  NatGateway:
+    Type: 'AWS::EC2::NatGateway'
+    DependsOn: AttachGateway
+    Properties:
+      AllocationId: !GetAtt 
+        - NatGatewayIPAddress
+        - AllocationId
+      SubnetId: !Ref PublicSubnet
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ':'
+            - - 'NatGateway'
+              - !Ref TestName
+  NatGatewayIPAddress:
     Type: 'AWS::EC2::EIP'
     DependsOn: AttachGateway
     Properties:
       Domain: vpc
-      InstanceId: !Ref JMeterClientInstance
+  PrivateRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ':'
+            - - 'PrivateRouteTable'
+              - !Ref TestName
+  PrivateRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+  PrivateSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       VpcId: !Ref VPC
       GroupDescription: Security Group for EC2 instances
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '0'
-          ToPort: '65535'
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
   #######################
   # EC2 Instances
   #######################
   JMeterClientInstance:
     Type: 'AWS::EC2::Instance'
-    DependsOn: [AttachGateway]
+    DependsOn: AttachGateway
     Properties:
       ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
       InstanceType: !Ref JMeterClientInstanceType
@@ -224,7 +272,7 @@ Resources:
           AssociatePublicIpAddress: 'true'
           DeviceIndex: '0'
           DeleteOnTermination: 'true'
-          SubnetId: !Ref Subnet
+          SubnetId: !Ref PublicSubnet
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
@@ -247,13 +295,13 @@ Resources:
           sudo wget --no-check-certificate --no-proxy 'http://search.maven.org/remotecontent?filepath=org/mortbay/jetty/alpn/alpn-boot/8.1.12.v20180117/alpn-boot-8.1.12.v20180117.jar'
           cd /tmp/apache-jmeter-4.0/bin
           sudo /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterClientInstance --region ${AWS::Region}
+          echo ${JMeterServer1Instance.PrivateIp} > private_ip
     CreationPolicy:
       ResourceSignal:
-        Count: '1'
-        Timeout: PT7M
+        Timeout: PT15M
   JMeterServer1Instance:
     Type: 'AWS::EC2::Instance'
-    DependsOn: [AttachGateway]
+    DependsOn: AttachGateway
     Properties:
       ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
       InstanceType: !Ref JMeterServer1InstanceType
@@ -270,7 +318,7 @@ Resources:
           AssociatePublicIpAddress: 'false'
           DeviceIndex: '0'
           DeleteOnTermination: 'true'
-          SubnetId: !Ref Subnet
+          SubnetId: !Ref PrivateSubnet
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
