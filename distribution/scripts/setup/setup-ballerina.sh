@@ -16,9 +16,17 @@
 # under the License.
 #
 # ----------------------------------------------------------------------------
-# Setup JMeter
+# Setup Ballerina
 # ----------------------------------------------------------------------------
 
+# Make sure the script is running as root.
+if [ "$UID" -ne "0" ]; then
+    echo "You must be root to run $0. Try following"
+    echo "sudo $0"
+    exit 9
+fi
+
+export script_name="$0"
 script_dir=$(dirname "$0")
 ballerina_version=""
 netty_host=""
@@ -34,7 +42,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts ":u:b:c:d:n:" opt; do
+while getopts "u:b:c:hd:n:" opt; do
     case "${opt}" in
     d)
         ballerina_version=${OPTARG}
@@ -50,15 +58,18 @@ while getopts ":u:b:c:d:n:" opt; do
 done
 shift "$((OPTIND - 1))"
 
-if [[ -z $ballerina_version ]]; then
-    echo "Please provide the version of Ballerina debian package."
-    exit 1
-fi
+function validate() {
+    if [[ -z $ballerina_version ]]; then
+        echo "Please provide the version of Ballerina debian package."
+        exit 1
+    fi
 
-if [[ -z $netty_host ]]; then
-    echo "Please provide the hostname of Netty Service."
-    exit 1
-fi
+    if [[ -z $netty_host ]]; then
+        echo "Please provide the hostname of Netty Service."
+        exit 1
+    fi
+}
+export -f validate
 
 function setup() {
     wget https://product-dist.ballerina.io/downloads/${ballerina_version}/ballerina-platform-linux-installer-x64-${ballerina_version}.deb

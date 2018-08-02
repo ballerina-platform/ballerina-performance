@@ -19,6 +19,14 @@
 # Setup JMeter
 # ----------------------------------------------------------------------------
 
+# Make sure the script is running as root.
+if [ "$UID" -ne "0" ]; then
+    echo "You must be root to run $0. Try following"
+    echo "sudo $0"
+    exit 9
+fi
+
+export script_name="$0"
 script_dir=$(dirname "$0")
 key_file_url=""
 
@@ -32,7 +40,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts ":u:b:c:k:" opt; do
+while getopts "u:b:c:hk:" opt; do
     case "${opt}" in
     k)
         key_file_url=${OPTARG}
@@ -44,6 +52,14 @@ while getopts ":u:b:c:k:" opt; do
     esac
 done
 shift "$((OPTIND - 1))"
+
+function validate() {
+    if [[ -z $key_file_url ]]; then
+        echo "Please provide the URL to download the private key."
+        exit 1
+    fi
+}
+export -f validate
 
 function setup() {
     echo "Setting up JMeter in $PWD"

@@ -33,9 +33,9 @@ performance_common_dist_url=""
 function usage() {
     echo ""
     echo "Usage: "
-    echo -n "$0 -u <target_user> -b <performance_ballerina_dist_url> -c <performance_common_dist_url>"
+    echo -n "${script_name:-$0} -u <target_user> -b <performance_ballerina_dist_url> -c <performance_common_dist_url>"
     if declare -F usageCommand >/dev/null 2>&1; then
-        echo "$(usageCommand)"
+        echo " $(usageCommand)"
     else
         echo ""
     fi
@@ -46,10 +46,11 @@ function usage() {
     if declare -F usageHelp >/dev/null 2>&1; then
         echo "$(usageHelp)"
     fi
+    echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "u:b:c:k:" opts; do
+while getopts "u:b:c:h" opts; do
     case $opts in
     u)
         target_user=${OPTARG}
@@ -59,6 +60,10 @@ while getopts "u:b:c:k:" opts; do
         ;;
     c)
         performance_common_dist_url=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
         ;;
     *)
         usage
@@ -85,6 +90,10 @@ fi
 if [[ -z $performance_common_dist_url ]]; then
     echo "Please provide the URL to download 'Performance Common Distribution'."
     exit 1
+fi
+
+if declare -F validate >/dev/null 2>&1; then
+    validate
 fi
 
 # Update packages
