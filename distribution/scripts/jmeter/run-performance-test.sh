@@ -38,7 +38,7 @@ ballerina_flags_name=("default")
 ballerina_heap_size=(1G 250M)
 backend_sleep_time=(0 30 500 1000)
 
-ballerina_host=10.42.0.6
+ballerina_host=$1
 api_path=/passthrough
 websocket_path=/basic/ws
 ballerina_ssh_host=ballerina
@@ -46,10 +46,11 @@ ballerina_ssh_host=ballerina
 backend_ssh_host=netty
 netty_port=8688
 
-jmeter1_host=192.168.32.12
-jmeter2_host=192.168.32.13
+jmeter1_host=$2
+jmeter2_host=$3
 jmeter1_ssh_host=jmeter1
 jmeter2_ssh_host=jmeter2
+alpn_path=$4
 
 payload_type=ARRAY
 
@@ -119,10 +120,10 @@ do
 		        ssh $backend_ssh_host "./netty-service/netty-start.sh $sleep_time $netty_port"
 		
                         echo "Starting Remote Jmeter server"
-		        ssh $jmeter1_ssh_host "./jmeter/jmeter-server-start.sh $jmeter1_host"
-                        ssh $jmeter2_ssh_host "./jmeter/jmeter-server-start.sh $jmeter2_host"
+		        ssh $jmeter1_ssh_host "./jmeter/jmeter-server-start.sh $jmeter1_host $alpn_path"
+                        ssh $jmeter2_ssh_host "./jmeter/jmeter-server-start.sh $jmeter2_host $alpn_path"
 
-                        export JVM_ARGS="-Xms2g -Xmx2g -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$report_location/jmeter_gc.log"
+                        export JVM_ARGS="-Xms2g -Xmx2g -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$report_location/jmeter_gc.log -Xbootclasspath/p:$alpn_path"
                         echo "# Running JMeter. Concurrent Users: $total_users Duration: $test_duration JVM Args: $JVM_ARGS" Ballerina host: $ballerina_host Path: $api_path Flags: $bal_flags
 
                         # Requests for HTTPS services

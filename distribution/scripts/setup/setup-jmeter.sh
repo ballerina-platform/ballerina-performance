@@ -38,9 +38,9 @@ tar xzf ${ballerina_dist_version}
 tar xzf ${perf_common_dist_version}
 cd jmeter
 sudo wget --no-check-certificate --no-proxy http://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-${jmeter_version}.tgz
-./install-jmeter.sh apache-jmeter-${jmeter_version}.tgz /tmp bzm-http2 websocket-samplers
+./install-jmeter.sh apache-jmeter-${jmeter_version}.tgz /home/ubuntu bzm-http2 websocket-samplers
 cd /home/ubuntu
-sudo wget --no-check-certificate --no-proxy http://search.maven.org/remotecontent?filepath=org/mortbay/jetty/alpn/alpn-boot/${alpn_version}/alpn-boot-${alpn_version}.jar
+sudo wget --no-check-certificate --no-proxy http://search.maven.org/remotecontent?filepath=org/mortbay/jetty/alpn/alpn-boot/${alpn_version}/alpn-boot-${alpn_version}.jar -O alpnboot.jar
 cd sar
 sudo ./install-sar.sh
 
