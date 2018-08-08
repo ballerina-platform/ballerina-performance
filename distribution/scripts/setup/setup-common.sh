@@ -103,7 +103,7 @@ apt install -y openjdk-8-jdk
 
 cd /home/$target_user
 wget ${performance_ballerina_dist_url} -O performance-ballerina-distribution.tar.gz
-wget ${perf_common_dist_url} -O performance-common-distribution.tar.gz
+wget ${performance_common_dist_url} -O performance-common-distribution.tar.gz
 
 # Extract distributions
 tar -xvf performance-ballerina-distribution.tar.gz
