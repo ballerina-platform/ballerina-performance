@@ -27,8 +27,8 @@ if [ "$UID" -ne "0" ]; then
 fi
 
 export script_name="$0"
+export key_file_url=""
 script_dir=$(dirname "$0")
-key_file_url=""
 
 function usageCommand() {
     echo "-k <key_file_url>"
