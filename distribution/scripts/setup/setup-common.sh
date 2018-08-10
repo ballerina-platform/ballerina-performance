@@ -113,7 +113,7 @@ tar -xvf performance-common-distribution.tar.gz
 
 FUNC=$(declare -f setup)
 if [[ ! -z $FUNC ]]; then
-    sudo bash -c "$FUNC; setup"
+    bash -c "$FUNC; setup"
 fi
 
 chown -R $target_user:$target_user /home/$target_user
