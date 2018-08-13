@@ -26,10 +26,10 @@ if [ "$UID" -ne "0" ]; then
     exit 9
 fi
 
-export script_name="$0"
 script_dir=$(dirname "$0")
-ballerina_version=""
-netty_host=""
+export script_name="$0"
+export ballerina_version=""
+export netty_host=""
 
 function usageCommand() {
     echo "-d <ballerina_version> -n <netty_host>"
@@ -42,7 +42,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts "u:b:c:hd:n:" opt; do
+while getopts "u:b:c:gp:hd:n:" opt; do
     case "${opt}" in
     d)
         ballerina_version=${OPTARG}

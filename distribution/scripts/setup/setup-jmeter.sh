@@ -40,7 +40,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts "u:b:c:hk:" opt; do
+while getopts "u:b:c:gp:hk:" opt; do
     case "${opt}" in
     k)
         key_file_url=${OPTARG}
@@ -76,4 +76,4 @@ function setup() {
 }
 export -f setup
 
-$script_dir/setup-common.sh "${opts[@]}" "$@"
+$script_dir/setup-common.sh "${opts[@]}" "$@" -p openjdk-8-jdk -p zip

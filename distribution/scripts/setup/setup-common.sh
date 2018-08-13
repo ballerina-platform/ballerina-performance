@@ -29,11 +29,14 @@ fi
 target_user="ubuntu"
 performance_ballerina_dist_url=""
 performance_common_dist_url=""
+dist_upgrade=false
+declare -a packages
 
 function usage() {
     echo ""
     echo "Usage: "
     echo -n "${script_name:-$0} -u <target_user> -b <performance_ballerina_dist_url> -c <performance_common_dist_url>"
+    echo -n "  [-g] [-p <package>]"
     if declare -F usageCommand >/dev/null 2>&1; then
         echo " $(usageCommand)"
     else
@@ -43,6 +46,8 @@ function usage() {
     echo "-u: Target Username. Default 'ubuntu'."
     echo "-b: The URL to download 'Performance Ballerina Distribution'."
     echo "-c: The URL to download 'Performance Common Distribution'."
+    echo "-g: Upgrade distribution"
+    echo "-p: Package to install. You can give multiple -p options."
     if declare -F usageHelp >/dev/null 2>&1; then
         echo "$(usageHelp)"
     fi
@@ -50,7 +55,7 @@ function usage() {
     echo ""
 }
 
-while getopts "u:b:c:h" opts; do
+while getopts "u:b:c:gp:h" opts; do
     case $opts in
     u)
         target_user=${OPTARG}
@@ -60,6 +65,12 @@ while getopts "u:b:c:h" opts; do
         ;;
     c)
         performance_common_dist_url=${OPTARG}
+        ;;
+    g)
+        dist_upgrade=true
+        ;;
+    p)
+        packages+=("${OPTARG}")
         ;;
     h)
         usage
@@ -78,7 +89,7 @@ if [[ -z $target_user ]]; then
 fi
 
 if ! id -u $target_user >/dev/null 2>&1; then
-    echo "The user does not exist."
+    echo "The $target_user user does not exist."
     exit 1
 fi
 
@@ -98,8 +109,17 @@ fi
 
 # Update packages
 apt update
-# Install OpenJDK
-apt install -y openjdk-8-jdk
+
+# Upgrade distribution
+if [ "$dist_upgrade" = true ] ; then
+    echo "Upgrading the distribution"
+    apt -y dist-upgrade;apt -y autoremove;apt -y autoclean
+fi
+
+for p in ${packages[*]}; do
+    echo "Installing $p package"
+    apt install -y $p
+done
 
 cd /home/$target_user
 wget ${performance_ballerina_dist_url} -O performance-ballerina-distribution.tar.gz
