@@ -25,9 +25,9 @@ service<http:Service> passthroughService bind passthroughEP {
 	json payload = req.getJsonPayload() but {error => {}};
         xml xmlPayload = check payload.toXML({});
 	http:Request clinetreq = new;
-        clinetreq.setXmlPayload(xmlPayload);
+        clinetreq.setXmlPayload(untaint xmlPayload);
 
-        var response = nettyEP -> post("/service/EchoService", request = clinetreq);
+        var response = nettyEP -> post("/service/EchoService", clinetreq);
         match response {
             http:Response httpResponse => {
                 _ = outboundEP -> respond(httpResponse);

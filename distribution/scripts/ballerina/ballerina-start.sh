@@ -41,9 +41,9 @@ for dir in /usr/lib/jvm/jdk1.8*; do
 done
 export JAVA_HOME="${jvm_dir}"
 
-if pgrep -f ballerina/bre > /dev/null; then
+if pgrep -f ballerina.*/bre > /dev/null; then
     echo "Shutting down Ballerina"
-    pkill -f ballerina/bre
+    pkill -f ballerina.*/bre
 fi
 
 if [ ! -d "${ballerina_path}/logs" ]; then

@@ -10,7 +10,7 @@ import ballerina/http;
 service<http:WebSocketService> basic bind { port: 9090 } {
 
     string ping = "ping";
-    blob pingData = ping.toBlob("UTF-8");
+    byte[] pingData = ping.toByteArray("UTF-8");
 
     onOpen(endpoint caller) {
         io:println("\nNew client connected");
@@ -34,17 +34,16 @@ service<http:WebSocketService> basic bind { port: 9090 } {
         }
     }
 
-    onBinary(endpoint caller, blob b) {
+    onBinary(endpoint caller, byte[] data) {
         io:println("\nNew binary message received");
-        io:println("UTF-8 decoded binary message: " + b.toString("UTF-8"));
-        caller->pushBinary(b) but { error e => log:printError("Error occurred when sending binary", err = e) };
+        caller->pushBinary(data) but { error e => log:printError("Error occurred when sending binary", err = e) };
     }
 
-    onPing(endpoint caller, blob data) {
+    onPing(endpoint caller, byte[] data) {
         caller->pong(data) but { error e => log:printError("Error occurred when closing the connection", err = e) };
     }
 
-    onPong(endpoint caller, blob data) {
+    onPong(endpoint caller, byte[] data) {
         io:println("Pong received");
     }
 
