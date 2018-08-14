@@ -75,6 +75,14 @@ function setup() {
     wget https://product-dist.ballerina.io/downloads/${ballerina_version}/ballerina-platform-linux-installer-x64-${ballerina_version}.deb
     dpkg -i ballerina-platform-linux-installer-x64-${ballerina_version}.deb
     echo "$netty_host netty" >>/etc/hosts
+
+    # Build Ballerina Files
+    pushd ballerina/bal
+    for bal_file in *.bal; do
+        echo "Building $bal_file file"
+        ballerina build ${bal_file}
+    done
+    popd
 }
 export -f setup
 
