@@ -122,12 +122,20 @@ for p in ${packages[*]}; do
 done
 
 cd /home/$target_user
-wget ${performance_ballerina_dist_url} -O performance-ballerina-distribution.tar.gz
-wget ${performance_common_dist_url} -O performance-common-distribution.tar.gz
+performance_ballerina_dist_name="performance-ballerina-distribution.tar.gz"
+performance_common_dist_name="performance-common-distribution.tar.gz"
+
+if [[ ! -f $performance_ballerina_dist_name ]]; then
+    wget ${performance_ballerina_dist_url} -O $performance_ballerina_dist_name
+fi
+
+if [[ ! -f $performance_common_dist_name ]]; then
+    wget ${performance_common_dist_url} -O $performance_common_dist_name
+fi
 
 # Extract distributions
-tar -xvf performance-ballerina-distribution.tar.gz
-tar -xvf performance-common-distribution.tar.gz
+tar -xvf $performance_ballerina_dist_name
+tar -xvf $performance_common_dist_name
 
 ./sar/install-sar.sh
 
