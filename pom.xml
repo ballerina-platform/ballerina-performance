@@ -22,6 +22,17 @@
         <module>distribution</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.performance.common</groupId>
+                <artifactId>performance-common-distribution</artifactId>
+                <version>${performance.common.version}</version>
+                <type>tar.gz</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <profiles>
         <profile>
             <id>pedantic</id>
@@ -53,5 +64,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <performance.common.version>0.1.1-SNAPSHOT</performance.common.version>
     </properties>
 </project>
