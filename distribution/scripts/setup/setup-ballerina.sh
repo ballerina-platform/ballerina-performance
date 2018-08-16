@@ -26,8 +26,8 @@ if [ "$UID" -ne "0" ]; then
     exit 9
 fi
 
-script_dir=$(dirname "$0")
 export script_name="$0"
+export script_dir=$(dirname "$0")
 export ballerina_version=""
 export netty_host=""
 
@@ -42,7 +42,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts "u:b:c:gp:hd:n:" opt; do
+while getopts "gp:w:o:hd:n:" opt; do
     case "${opt}" in
     d)
         ballerina_version=${OPTARG}
@@ -77,7 +77,7 @@ function setup() {
     echo "$netty_host netty" >>/etc/hosts
 
     # Build Ballerina Files
-    pushd ballerina/bal
+    pushd $script_dir/../ballerina/bal
     for bal_file in *.bal; do
         echo "Building $bal_file file"
         ballerina build ${bal_file}

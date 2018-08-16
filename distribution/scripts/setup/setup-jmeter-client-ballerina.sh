@@ -16,7 +16,7 @@
 # under the License.
 #
 # ----------------------------------------------------------------------------
-# Setup Netty
+# Setup JMeter Client
 # ----------------------------------------------------------------------------
 
 # Make sure the script is running as root.
@@ -29,4 +29,6 @@ fi
 export script_name="$0"
 script_dir=$(dirname "$0")
 
-$script_dir/setup-common.sh "$@" -p openjdk-8-jdk
+$script_dir/setup-jmeter-client.sh "$@" -j bzm-http2 -j websocket-samplers \
+    -w http://search.maven.org/remotecontent?filepath=org/mortbay/jetty/alpn/alpn-boot/8.1.12.v20180117/alpn-boot-8.1.12.v20180117.jar \
+    -o alpnboot.jar
