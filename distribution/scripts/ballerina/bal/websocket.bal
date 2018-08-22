@@ -29,7 +29,7 @@ service<http:WebSocketService> basic bind { port: 9090 } {
             caller->close(1001, "You asked me to close the connection")
             but { error e => log:printError("Error occurred when closing the connection", err = e) };
         } else {
-            caller->pushText("You said: " + text) but { error e => log:printError("Error occurred when sending text",
+            caller->pushText(text) but { error e => log:printError("Error occurred when sending text",
                 err = e) };
         }
     }

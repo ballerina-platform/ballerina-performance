@@ -1,6 +1,6 @@
 import ballerina/http;
 
-endpoint http:Listener passthroughEP {
+endpoint http:Listener transformationEP {
     port:9090,
 	secureSocket: {
         keyStore: {
@@ -14,14 +14,14 @@ endpoint http:Client nettyEP {
     url:"http://netty:8688"
 };
 
-@http:ServiceConfig {basePath:"/passthrough"}
-service<http:Service> passthroughService bind passthroughEP {
+@http:ServiceConfig {basePath:"/transform"}
+service<http:Service> transformationService bind transformationEP {
 
     @http:ResourceConfig {
         methods:["POST"],
         path:"/"
     }
-    passthrough (endpoint outboundEP, http:Request req) {
+    transform (endpoint outboundEP, http:Request req) {
 	json payload = req.getJsonPayload() but {error => {}};
         xml xmlPayload = check payload.toXML({});
 	http:Request clinetreq = new;

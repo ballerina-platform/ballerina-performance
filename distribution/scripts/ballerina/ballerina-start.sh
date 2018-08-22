@@ -19,42 +19,73 @@
 
 # Required parameters -> heap size, ballerina file, flags
 
-heap_size=$1
-if [[ -z $heap_size ]]; then
-    echo "Running with default heap 1 GB."
-    heap_size="1G"
-fi
+bal_file=""
+heap_size=""
 
-bal_file=$2
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 -b <bal_file> [-m <heap_size>] -- [ballerina_flags]"
+    echo ""
+    echo "-b: The Ballerina program."
+    echo "-m: The heap memory size of Ballerina VM."
+    echo "-h: Display this help and exit."
+    echo ""
+}
+
+while getopts "b:m:h" opts; do
+    case $opts in
+    b)
+        bal_file=${OPTARG}
+        ;;
+    m)
+        heap_size=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+bal_flags="$@"
+
 if [[ -z $bal_file ]]; then
-    echo "No bal file specified."
+    echo "Please provide the Ballerina program."
     exit 1
 fi
 
-flags="${@:3:99}"
+if [[ -z $heap_size ]]; then
+    heap_size="1G"
+fi
 
-ballerina_path=$HOME/ballerina
+ballerina_path=$HOME/ballerina/bal
 
-jvm_dir=""
-for dir in /usr/lib/jvm/jdk1.8*; do
-    [ -d "${dir}" ] && jvm_dir="${dir}" && break
-done
-export JAVA_HOME="${jvm_dir}"
+# jvm_dir=""
+# for dir in /usr/lib/jvm/jdk1.8*; do
+#     [ -d "${dir}" ] && jvm_dir="${dir}" && break
+# done
+# export JAVA_HOME="${jvm_dir}"
 
-if pgrep -f ballerina.*/bre > /dev/null; then
+if pgrep -f ballerina.*/bre >/dev/null; then
     echo "Shutting down Ballerina"
     pkill -f ballerina.*/bre
 fi
 
 if [ ! -d "${ballerina_path}/logs" ]; then
     mkdir ${ballerina_path}/logs
-fi 
+fi
 
 log_files=(${ballerina_path}/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp/${bal_file}/"
     mkdir -p /tmp/${bal_file}
-    mv ${ballerina_path}/logs/* /tmp/${bal_file}/;
+    mv ${ballerina_path}/logs/* /tmp/${bal_file}/
 fi
 
 echo "Setting Heap to ${heap_size}"
@@ -62,9 +93,12 @@ echo "Setting Heap to ${heap_size}"
 echo "Enabling GC Logs"
 export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${ballerina_path}/logs/gc.log -Xms${heap_size} -Xmx${heap_size}"
 
-echo "Starting Ballerina with Flags: " $flags
-nohup ${ballerina_path}/bin/ballerina run ${ballerina_path}/bin/${bal_file}x $flags &> ${ballerina_path}/logs/ballerina.log&
+ballerina_command="ballerina run ${bal_file} $bal_flags"
+echo "Starting Ballerina: $ballerina_command"
+cd $ballerina_path
+nohup $ballerina_command &>${ballerina_path}/logs/ballerina.log &
 
 # TODO Do a curl and check if service is started
-echo "Wait for 10 seconds to make sure that the server is ready to accept API requests."
-sleep 10
+echo "Waiting for 5 seconds to make sure that the server is ready to accept requests."
+sleep 5
+tail -10 ${ballerina_path}/logs/ballerina.log

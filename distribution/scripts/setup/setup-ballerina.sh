@@ -72,7 +72,10 @@ function validate() {
 export -f validate
 
 function setup() {
-    wget https://product-dist.ballerina.io/downloads/${ballerina_version}/ballerina-platform-linux-installer-x64-${ballerina_version}.deb
+    if [[ ! -f ballerina-platform-linux-installer-x64-${ballerina_version}.deb ]]; then
+        echo "Downloading Ballerina ${ballerina_version} distribution"
+        wget -q https://product-dist.ballerina.io/downloads/${ballerina_version}/ballerina-platform-linux-installer-x64-${ballerina_version}.deb
+    fi
     dpkg -i ballerina-platform-linux-installer-x64-${ballerina_version}.deb
     echo "$netty_host netty" >>/etc/hosts
 
