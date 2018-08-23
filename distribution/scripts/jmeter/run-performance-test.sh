@@ -33,7 +33,7 @@ declare -A test_scenario0=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=false
 )
 declare -A test_scenario1=(
@@ -43,7 +43,7 @@ declare -A test_scenario1=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="https"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=false
 )
 declare -A test_scenario2=(
@@ -53,7 +53,7 @@ declare -A test_scenario2=(
     [path]="/transform"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=false
 )
 declare -A test_scenario3=(
@@ -63,7 +63,7 @@ declare -A test_scenario3=(
     [path]="/transform"
     [jmx]="http-post-request.jmx"
     [protocol]="https"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=false
 )
 declare -A test_scenario4=(
@@ -73,7 +73,7 @@ declare -A test_scenario4=(
     [path]="/passthrough"
     [jmx]="http2-post-request.jmx"
     [protocol]="https"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=false
 )
 declare -A test_scenario5=(
@@ -81,9 +81,9 @@ declare -A test_scenario5=(
     [bal]="websocket.balx"
     [bal_flags]=""
     [path]="/basic/ws"
-    [jmx]="post-request-test.jmx"
+    [jmx]="websocket.jmx"
     [protocol]=""
-    [sleep]="-1"
+    [use_backend]=false
     [skip]=false
 )
 declare -A test_scenario10=(
@@ -93,7 +93,7 @@ declare -A test_scenario10=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=true
 )
 declare -A test_scenario11=(
@@ -103,7 +103,7 @@ declare -A test_scenario11=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=true
 )
 declare -A test_scenario12=(
@@ -113,7 +113,7 @@ declare -A test_scenario12=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=true
 )
 declare -A test_scenario13=(
@@ -123,7 +123,7 @@ declare -A test_scenario13=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=true
 )
 declare -A test_scenario14=(
@@ -133,20 +133,18 @@ declare -A test_scenario14=(
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="http"
-    [sleep]="${backend_sleep_times}"
+    [use_backend]=true
     [skip]=true
 )
 
 function before_execute_test_scenario() {
+    local bal_file=${scenario[bal]}
+    local bal_flags=${scenario[bal_flags]}
+    local service_path=${scenario[path]}
+    local protocol=${scenario[protocol]}
+    jmeter_params+=("host=$ballerina_host" "port=9090" "path=$service_path")
+    jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol")
     JMETER_JVM_ARGS="-Xbootclasspath/p:$HOME/alpnboot.jar"
-    bal_file=${scenario[bal]}
-    bal_flags=${scenario[bal_flags]}
-    service_path=${scenario[path]}
-    jmx_file=${scenario[jmx]}
-    protocol=${scenario[protocol]}
-    sleep=${scenario[sleep]}
-    JMETER_ARGS="-Ghost=$ballerina_host -Gport=9090 -Gpath=$service_path"
-    JMETER_ARGS+=" -Gpayload=$HOME/${msize}B.json -Gresponse_size=${msize}B -Gprotocol=$protocol"
     echo "Starting Ballerina Service. Ballerina Program: $bal_file, Heap: $heap, Flags: ${bal_flags:-N/A}"
     ssh $ballerina_ssh_host "./ballerina/ballerina-start.sh -b $bal_file -m $heap -- $bal_flags"
 }
