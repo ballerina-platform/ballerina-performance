@@ -31,13 +31,13 @@ Description: >-
 Mappings:
   AWSRegion2AMI:
     us-east-1:
-      AMI: ami-759bc50a
+      AMI: ami-04169656fea786776
     us-east-2:
-      AMI: ami-5e8bb23b
+      AMI: ami-0552e3455b9bc8d50
     us-west-1:
-      AMI: ami-4aa04129
+      AMI: ami-059e7901352ebaef8
     us-west-2:
-      AMI: ami-ba602bc2
+      AMI: ami-51537029
 #############################
 # User inputs
 #############################
@@ -50,6 +50,16 @@ Parameters:
     Description: Name of the tests
     Type: String
     Default: Ballerina Performance Tests
+  PerformanceBallerinaDistributionURL:
+    Description: The URL to download 'Performance Ballerina Distribution'.
+    Type: String
+    ConstraintDescription: must be a valid URL
+    AllowedPattern: ^https?:\/\/.*$
+  KeyFileURL:
+    Description: The URL to download the key file.
+    Type: String
+    ConstraintDescription: must be a valid URL
+    AllowedPattern: ^https?:\/\/.*$
   JMeterClientInstanceType:
     Description: JMeter Client EC2 instance type
     Type: String
@@ -64,22 +74,8 @@ Parameters:
       - c4.xlarge
       - c4.2xlarge
     ConstraintDescription: must be a valid EC2 instance type.
-  JMeterServer1InstanceType:
-    Description: JMeter Server 1 EC2 instance type
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - m4.large
-      - m4.xlarge
-      - c3.large
-      - c3.xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-    ConstraintDescription: must be a valid EC2 instance type.
-  JMeterServer2InstanceType:
-    Description: JMeter Server 2 EC2 instance type
+  JMeterServerInstanceType:
+    Description: JMeter Server EC2 instance type
     Type: String
     Default: t2.micro
     AllowedValues:
@@ -134,7 +130,7 @@ Resources:
     Properties:
       CidrBlock: 10.0.0.0/16
       EnableDnsSupport: true
-      EnableDnsHostnames: false
+      EnableDnsHostnames: true
       Tags:
         - Key: Name
           Value: !Join
@@ -275,27 +271,23 @@ Resources:
           SubnetId: !Ref PublicSubnet
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash
-          sudo apt-get -y install python-setuptools
+          #!/bin/bash -xe
+          # Change to user directory
+          cd /home/ubuntu
+          # Install AWS CloudFormation Helper Scripts
+          apt-get -y install python-setuptools
           mkdir aws-cfn-bootstrap-latest
           curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
-          sudo easy_install aws-cfn-bootstrap-latest
-          cd /home/ubuntu
-          apt-get update
-          apt-get install -y openjdk-8-jdk
-          mkdir test66
-          wget https://s3.us-east-2.amazonaws.com/ballerinaperformancetest/performance-ballerina/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz
-          wget https://s3.us-east-2.amazonaws.com/ballerinaperformancetest/performance-common/performance-common-distribution-0.1.1-SNAPSHOT.tar.gz
-          tar xzf performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz
-          tar xzf performance-common-distribution-0.1.1-SNAPSHOT.tar.gz
-          cd jmeter
-          sudo wget --no-check-certificate --no-proxy 'http://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-4.0.tgz'
-          ./install-jmeter.sh apache-jmeter-4.0.tgz /tmp bzm-http2 websocket-samplers
-          cd /home/ubuntu
-          sudo wget --no-check-certificate --no-proxy 'http://search.maven.org/remotecontent?filepath=org/mortbay/jetty/alpn/alpn-boot/8.1.12.v20180117/alpn-boot-8.1.12.v20180117.jar'
-          cd /tmp/apache-jmeter-4.0/bin
-          sudo /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterClientInstance --region ${AWS::Region}
-          echo ${JMeterServer1Instance.PrivateIp} > private_ip
+          easy_install aws-cfn-bootstrap-latest
+          # Download and Extract scripts
+          curl -s ${PerformanceBallerinaDistributionURL} | tar xz
+          ./setup/setup-jmeter-client-ballerina.sh -g -k ${KeyFileURL} \
+          -a jmeter1 -n ${JMeterServer1Instance.PrivateIp} \
+          -a jmeter2 -n ${JMeterServer2Instance.PrivateIp} \
+          -a ballerina -n ${BallerinaInstance.PrivateIp} \
+          -a netty -n ${BackendInstance.PrivateIp}
+          chown -R ubuntu:ubuntu /home/ubuntu
+          /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterClientInstance --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -304,7 +296,7 @@ Resources:
     DependsOn: AttachGateway
     Properties:
       ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
-      InstanceType: !Ref JMeterServer1InstanceType
+      InstanceType: !Ref JMeterServerInstanceType
       KeyName: !Ref KeyName
       Tags:
         - Key: Name
@@ -321,21 +313,137 @@ Resources:
           SubnetId: !Ref PrivateSubnet
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash
-          sudo apt-get -y install python-setuptools
+          #!/bin/bash -xe
+          # Change to user directory
+          cd /home/ubuntu
+          # Install AWS CloudFormation Helper Scripts
+          apt-get -y install python-setuptools
           mkdir aws-cfn-bootstrap-latest
           curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
-          sudo easy_install aws-cfn-bootstrap-latest
+          easy_install aws-cfn-bootstrap-latest
+          # Download and Extract scripts
+          curl -s ${PerformanceBallerinaDistributionURL} | tar xz
+          ./setup/setup-jmeter-ballerina.sh -g
+          chown -R ubuntu:ubuntu /home/ubuntu
+          /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer1Instance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+  JMeterServer2Instance:
+    Type: 'AWS::EC2::Instance'
+    DependsOn: AttachGateway
+    Properties:
+      ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
+      InstanceType: !Ref JMeterServerInstanceType
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Join
+              - ':'
+              - - 'JMeter Server 2'
+                - !Ref TestName
+      NetworkInterfaces:
+        - GroupSet:
+            - !Ref InstanceSecurityGroup
+          AssociatePublicIpAddress: 'false'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref PrivateSubnet
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          # Change to user directory
           cd /home/ubuntu
-          apt-get update
-          apt-get install -y openjdk-8-jdk
-          mkdir test66
+          # Install AWS CloudFormation Helper Scripts
+          apt-get -y install python-setuptools
+          mkdir aws-cfn-bootstrap-latest
+          curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
+          easy_install aws-cfn-bootstrap-latest
+          # Download and Extract scripts
+          curl -s ${PerformanceBallerinaDistributionURL} | tar xz
+          ./setup/setup-jmeter-ballerina.sh -g
+          chown -R ubuntu:ubuntu /home/ubuntu
+          /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer2Instance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+  BallerinaInstance:
+    Type: 'AWS::EC2::Instance'
+    DependsOn: AttachGateway
+    Properties:
+      ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
+      InstanceType: !Ref BallerinaInstanceType
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Join
+              - ':'
+              - - 'Ballerina'
+                - !Ref TestName
+      NetworkInterfaces:
+        - GroupSet:
+            - !Ref InstanceSecurityGroup
+          AssociatePublicIpAddress: 'false'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref PrivateSubnet
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          # Change to user directory
+          cd /home/ubuntu
+          # Install AWS CloudFormation Helper Scripts
+          apt-get -y install python-setuptools
+          mkdir aws-cfn-bootstrap-latest
+          curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
+          easy_install aws-cfn-bootstrap-latest
+          # Download and Extract scripts
+          curl -s ${PerformanceBallerinaDistributionURL} | tar xz
+          ./setup/setup-ballerina.sh -g -d 0.981.1 -n ${BackendInstance.PrivateIp}
+          chown -R ubuntu:ubuntu /home/ubuntu
+          /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource BallerinaInstance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+  BackendInstance:
+    Type: 'AWS::EC2::Instance'
+    DependsOn: AttachGateway
+    Properties:
+      ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
+      InstanceType: !Ref BackendInstanceType
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Join
+              - ':'
+              - - 'Ballerina'
+                - !Ref TestName
+      NetworkInterfaces:
+        - GroupSet:
+            - !Ref InstanceSecurityGroup
+          AssociatePublicIpAddress: 'false'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref PrivateSubnet
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          # Change to user directory
+          cd /home/ubuntu
+          # Install AWS CloudFormation Helper Scripts
+          apt-get -y install python-setuptools
+          mkdir aws-cfn-bootstrap-latest
+          curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
+          easy_install aws-cfn-bootstrap-latest
+          # Download and Extract scripts
+          curl -s ${PerformanceBallerinaDistributionURL} | tar xz
+          ./setup/setup-netty.sh
+          chown -R ubuntu:ubuntu /home/ubuntu
+          /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource BackendInstance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
 
-         #sudo /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer1Instance --region ${AWS::Region}
-    #CreationPolicy:
-      #ResourceSignal:
-        #Count: '1'
-        #Timeout: PT7M
 Outputs:
   URL:
     Description: JMeter Client Public IP
