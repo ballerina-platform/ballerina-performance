@@ -22,7 +22,7 @@ Description: >-
   AWS CloudFormation Template to run Ballerina Performance Tests. This template
   creates Amazon EC2 instance in a VPC. The JMeter Client EC2 instance will be in a
   public subnet with a public IP. All other EC2 instances will be in a private subnet.
-  **WARNING** This template creates multipe Amazon AWS resources. You will be
+  **WARNING** This template creates multiple Amazon AWS resources. You will be
   billed for the AWS resources used if you create a stack from this template.
 ##############################################################################################
 # Mappings for Ubuntu AMIs of Instance Type: hvm:ebs-ssd
@@ -64,58 +64,18 @@ Parameters:
     Description: JMeter Client EC2 instance type
     Type: String
     Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - m4.large
-      - m4.xlarge
-      - c3.large
-      - c3.xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-    ConstraintDescription: must be a valid EC2 instance type.
   JMeterServerInstanceType:
     Description: JMeter Server EC2 instance type
     Type: String
     Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - m4.large
-      - m4.xlarge
-      - c3.large
-      - c3.xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-    ConstraintDescription: must be a valid EC2 instance type.
   BallerinaInstanceType:
     Description: Ballerina EC2 instance type
     Type: String
     Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - m4.large
-      - m4.xlarge
-      - c3.large
-      - c3.xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-    ConstraintDescription: must be a valid EC2 instance type.
   BackendInstanceType:
     Description: Backend EC2 instance type
     Type: String
     Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - m4.large
-      - m4.xlarge
-      - c3.large
-      - c3.xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-    ConstraintDescription: must be a valid EC2 instance type.
 ################################
 # Create AWS resources
 ################################
