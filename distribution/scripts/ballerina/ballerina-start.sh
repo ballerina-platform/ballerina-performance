@@ -17,15 +17,13 @@
 # Start Ballerina Service
 # ----------------------------------------------------------------------------
 
-# Required parameters -> heap size, ballerina file, flags
-
 bal_file=""
 heap_size=""
 
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -b <bal_file> [-m <heap_size>] -- [ballerina_flags]"
+    echo "$0 -b <bal_file> [-m <heap_size>] [-h] -- [ballerina_flags]"
     echo ""
     echo "-b: The Ballerina program."
     echo "-m: The heap memory size of Ballerina VM."
@@ -65,12 +63,6 @@ if [[ -z $heap_size ]]; then
 fi
 
 ballerina_path=$HOME/ballerina/bal
-
-# jvm_dir=""
-# for dir in /usr/lib/jvm/jdk1.8*; do
-#     [ -d "${dir}" ] && jvm_dir="${dir}" && break
-# done
-# export JAVA_HOME="${jvm_dir}"
 
 if pgrep -f ballerina.*/bre >/dev/null; then
     echo "Shutting down Ballerina"
