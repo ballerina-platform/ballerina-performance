@@ -72,11 +72,11 @@ function validate() {
 export -f validate
 
 function setup() {
-    if [[ ! -f ballerina_Installer.deb ]]; then
+    if [[ ! -f ballerina_installer.deb ]]; then
         echo "Downloading Ballerina distribution"
-        wget -q $download_url -O ballerina_Installer.deb
+        wget -q $download_url -O ballerina_installer.deb
     fi
-    dpkg -i ballerina_Installer.deb
+    dpkg -i ballerina_installer.deb
     echo "$netty_host netty" >>/etc/hosts
 
     # Build Ballerina Files

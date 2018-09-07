@@ -1,0 +1,202 @@
+#!/bin/bash -e
+# Copyright (c) 2018, WSO2 Inc. (http://wso2.org) All Rights Reserved.
+#
+# WSO2 Inc. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# ----------------------------------------------------------------------------
+# Run all scripts.
+# ----------------------------------------------------------------------------
+
+script_dir=$(dirname "$0")
+results_dir="$PWD/results-$(date +%Y%m%d%H%M%S)"
+ballerina_performance_distribution=""
+key_file=""
+ballerina_installer_url=""
+default_key_name="ballerina-perf-test"
+key_name="$default_key_name"
+default_s3_bucket_name="ballerinaperformancetest"
+s3_bucket_name="$default_s3_bucket_name"
+default_s3_bucket_region="us-east-2"
+s3_bucket_region="$default_s3_bucket_region"
+
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-n <key_name>]"
+    echo "   [-b <s3_bucket_name>] [-r <s3_bucket_region>] [-h] -- [run_performance_tests_options]"
+    echo ""
+    echo "-f: The Ballerina Performance Distribution containing the scripts to run performance tests."
+    echo "-k: The Amazon EC2 Key File."
+    echo "-u: The Ballerina Installer URL."
+    echo "-n: The Amazon EC2 Key Name. Default: $default_key_name."
+    echo "-b: The Amazon S3 Bucket Name. Default: $default_s3_bucket_name."
+    echo "-r: The Amazon S3 Bucket Region. Default: $default_s3_bucket_region."
+    echo "-h: Display this help and exit."
+    echo ""
+}
+
+while getopts "f:k:n:u:b:r:h" opts; do
+    case $opts in
+    f)
+        ballerina_performance_distribution=${OPTARG}
+        ;;
+    k)
+        key_file=${OPTARG}
+        ;;
+    n)
+        key_name=${OPTARG}
+        ;;
+    u)
+        ballerina_installer_url=${OPTARG}
+        ;;
+    b)
+        s3_bucket_name=${OPTARG}
+        ;;
+    r)
+        s3_bucket_region=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+run_performance_tests_options="$@"
+
+if [[ ! -f $ballerina_performance_distribution ]]; then
+    echo "Please provide Ballerina Performance Distribution."
+    exit 1
+fi
+
+ballerina_performance_distribution_filename=$(basename $ballerina_performance_distribution)
+
+if [[ ${ballerina_performance_distribution_filename: -7} != ".tar.gz" ]]; then
+    echo "Ballerina Performance Distribution must have .tar.gz extension"
+    exit 1
+fi
+
+if [[ ! -f $key_file ]]; then
+    echo "Please provide the key file."
+    exit 1
+fi
+
+if [[ ${key_file: -4} != ".pem" ]]; then
+    echo "AWS EC2 Key file must have .pem extension"
+    exit 1
+fi
+
+if [[ -z $ballerina_installer_url ]]; then
+    echo "Please provide the Ballerina Installer URL."
+    exit 1
+fi
+
+if [[ -z $key_name ]]; then
+    echo "Please provide the key name."
+    exit 1
+fi
+
+if [[ -z $s3_bucket_name ]]; then
+    echo "Please provide S3 bucket name."
+    exit 1
+fi
+
+if [[ -z $s3_bucket_region ]]; then
+    echo "Please provide S3 bucket region."
+    exit 1
+fi
+
+key_filename=$(basename "$key_file")
+
+if [[ "${key_filename%.*}" != "$key_name" ]]; then
+    echo "Key file must match with the key name. i.e. $key_filename should be equal to $key_name.pem."
+    exit 1
+fi
+
+mkdir $results_dir
+echo "Results will be downloaded to $results_dir"
+
+temp_dir=$(mktemp -d)
+
+ln -s $key_file $temp_dir/$key_filename
+ln -s $ballerina_performance_distribution $temp_dir/$ballerina_performance_distribution_filename
+
+echo "Syncing files in $temp_dir to S3 Bucket $s3_bucket_name..."
+aws s3 sync $temp_dir s3://$s3_bucket_name
+
+# aws s3 cp $key_file s3://$s3_bucket_name
+# aws s3 cp $ballerina_performance_distribution s3://$s3_bucket_name
+
+cd $script_dir
+
+echo "Validating stack..."
+# Validate stack first
+aws cloudformation validate-template --template-body file://ballerina_perf_test_cfn.yaml
+
+create_stack_command="aws cloudformation create-stack --stack-name ballerina-test-stack \
+    --template-body file://ballerina_perf_test_cfn.yaml --parameters \
+    ParameterKey=KeyName,ParameterValue=$key_name \
+    ParameterKey=BucketName,ParameterValue=$s3_bucket_name \
+    ParameterKey=BucketRegion,ParameterValue=$s3_bucket_region \
+    ParameterKey=PerformanceBallerinaDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
+    ParameterKey=BallerinaInstallerURL,ParameterValue=$ballerina_installer_url \
+    --capabilities CAPABILITY_IAM"
+
+echo "Creating stack..."
+echo "$create_stack_command"
+# Create stack
+stack_id="$($create_stack_command)"
+
+echo "Created stack: $stack_id"
+
+# Wait till completion
+echo "Waiting till the stack creation completes..."
+aws cloudformation wait stack-create-complete --stack-name $stack_id
+
+echo "Getting JMeter Client Public IP..."
+
+jmeter_client_ip="$(aws cloudformation describe-stacks --stack-name $stack_id --query 'Stacks[0].Outputs[?OutputKey==`JMeterClientPublicIP`].OutputValue' --output text)"
+
+# JMeter servers must be 2 (according to the cloudformation script)
+run_performance_tests_command="./jmeter/run-performance-tests.sh ${run_performance_tests_options[@]} -n 2"
+# Run performance tests
+echo "Running performance tests: $run_performance_tests_command"
+ssh -i $key_file -o "StrictHostKeyChecking=no" -t ubuntu@$jmeter_client_ip $run_performance_tests_command
+
+scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results.zip $results_dir
+
+if [[ ! -f $results_dir/results.zip ]]; then
+    "Failed to download the results.zip"
+    exit 500
+fi
+
+echo "Creating summary.csv..."
+cd $results_dir
+unzip -q $ballerina_performance_distribution
+unzip -q results.zip
+./jmeter/create-summary-csv.sh -d results -n Ballerina -p ballerina -j 2
+
+echo "Converting summary results to markdown format..."
+./jmeter/csv-to-markdown-converter.py summary.csv summary.md
+
+echo "Deleting the stack: $stack_id"
+aws cloudformation delete-stack --stack-name  $stack_id
+
+aws cloudformation wait stack-delete-complete --stack-name  $stack_id
