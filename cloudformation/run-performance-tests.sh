@@ -264,9 +264,10 @@ fi
 
 echo "Creating summary.csv..."
 cd $results_dir
-unzip -q $ballerina_performance_distribution
+tar -xf $ballerina_performance_distribution
 unzip -q results.zip
-./jmeter/create-summary-csv.sh -d results -n Ballerina -p ballerina -j 2
+wget -q http://sourceforge.net/projects/gcviewer/files/gcviewer-1.35.jar/download -O gcviewer.jar
+./jmeter/create-summary-csv.sh -d results -n Ballerina -p ballerina -j 2 -g gcviewer.jar
 
 echo "Converting summary results to markdown format..."
 ./jmeter/csv-to-markdown-converter.py summary.csv summary.md
