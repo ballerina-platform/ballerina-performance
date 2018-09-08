@@ -68,19 +68,15 @@ Parameters:
   JMeterClientInstanceType:
     Description: JMeter Client EC2 instance type
     Type: String
-    Default: t2.micro
   JMeterServerInstanceType:
     Description: JMeter Server EC2 instance type
     Type: String
-    Default: t2.micro
   BallerinaInstanceType:
     Description: Ballerina EC2 instance type
     Type: String
-    Default: t2.micro
   BackendInstanceType:
     Description: Backend EC2 instance type
     Type: String
-    Default: t2.micro
 ################################
 # Create AWS resources
 ################################
@@ -362,7 +358,7 @@ Resources:
                   - /
                   - !Ref KeyName
                   - .pem
-              mode: '000444'
+              mode: '000600'
               owner: ubuntu
               group: ubuntu
               authentication: "S3AccessCreds"
@@ -419,11 +415,13 @@ Resources:
           curl -s https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -O
           pip install aws-cfn-bootstrap-latest.tar.gz
           tar xzf aws-cfn-bootstrap-latest.tar.gz -C  aws-cfn-bootstrap-latest --strip-components 1
-          ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          ln -s aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource JMeterClientInstance --region ${AWS::Region}
           # Must run setup script in User Data (Commands executed within cfn-init do not show the progress in logs)
           /home/ubuntu/setup/setup-jmeter-client-ballerina.sh -g -k /home/ubuntu/private_key.pem \
+            -i /home/ubuntu \
+            -c /home/ubuntu \
             -a jmeter1 -n ${JMeterServer1Instance.PrivateIp} \
             -a jmeter2 -n ${JMeterServer2Instance.PrivateIp} \
             -a ballerina -n ${BallerinaInstance.PrivateIp} \
@@ -559,11 +557,11 @@ Resources:
           curl -s https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -O
           pip install aws-cfn-bootstrap-latest.tar.gz
           tar xzf aws-cfn-bootstrap-latest.tar.gz -C  aws-cfn-bootstrap-latest --strip-components 1
-          ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          ln -s aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource JMeterServer1Instance --region ${AWS::Region}
           # Run setup
-          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g
+          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu
           # Signal
           /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer1Instance --region ${AWS::Region}
     CreationPolicy:
@@ -695,11 +693,11 @@ Resources:
           curl -s https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -O
           pip install aws-cfn-bootstrap-latest.tar.gz
           tar xzf aws-cfn-bootstrap-latest.tar.gz -C  aws-cfn-bootstrap-latest --strip-components 1
-          ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          ln -s aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource JMeterServer2Instance --region ${AWS::Region}
           # Run setup
-          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g
+          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu
           # Signal
           /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer2Instance --region ${AWS::Region}
     CreationPolicy:
@@ -831,7 +829,7 @@ Resources:
           curl -s https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -O
           pip install aws-cfn-bootstrap-latest.tar.gz
           tar xzf aws-cfn-bootstrap-latest.tar.gz -C  aws-cfn-bootstrap-latest --strip-components 1
-          ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          ln -s aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource BallerinaInstance --region ${AWS::Region}
           # Run setup
@@ -967,7 +965,7 @@ Resources:
           curl -s https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -O
           pip install aws-cfn-bootstrap-latest.tar.gz
           tar xzf aws-cfn-bootstrap-latest.tar.gz -C  aws-cfn-bootstrap-latest --strip-components 1
-          ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+          ln -s aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource BackendInstance --region ${AWS::Region}
           # Run setup
