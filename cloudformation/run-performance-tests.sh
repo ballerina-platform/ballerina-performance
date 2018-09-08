@@ -19,6 +19,7 @@
 # Run all scripts.
 # ----------------------------------------------------------------------------
 
+script_start_time=$(date +%s)
 script_dir=$(dirname "$0")
 results_dir="$PWD/results-$(date +%Y%m%d%H%M%S)"
 ballerina_performance_distribution=""
@@ -30,12 +31,23 @@ default_s3_bucket_name="ballerinaperformancetest"
 s3_bucket_name="$default_s3_bucket_name"
 default_s3_bucket_region="us-east-2"
 s3_bucket_region="$default_s3_bucket_region"
+default_jmeter_client_ec2_instance_type="t2.micro"
+jmeter_client_ec2_instance_type="$default_jmeter_client_ec2_instance_type"
+default_jmeter_server_ec2_instance_type="t2.micro"
+jmeter_server_ec2_instance_type="$default_jmeter_server_ec2_instance_type"
+default_ballerina_ec2_instance_type="t2.micro"
+ballerina_ec2_instance_type="$default_ballerina_ec2_instance_type"
+default_netty_ec2_instance_type="t2.micro"
+netty_ec2_instance_type="$default_netty_ec2_instance_type"
 
 function usage() {
     echo ""
     echo "Usage: "
     echo "$0 -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-n <key_name>]"
-    echo "   [-b <s3_bucket_name>] [-r <s3_bucket_region>] [-h] -- [run_performance_tests_options]"
+    echo "   [-b <s3_bucket_name>] [-r <s3_bucket_region>]"
+    echo "   [-J <jmeter_client_ec2_instance_type>] [-S <jmeter_server_ec2_instance_type>]"
+    echo "   [-B <ballerina_ec2_instance_type>] [-N <netty_ec2_instance_type>]"
+    echo "   [-h] -- [run_performance_tests_options]"
     echo ""
     echo "-f: The Ballerina Performance Distribution containing the scripts to run performance tests."
     echo "-k: The Amazon EC2 Key File."
@@ -43,11 +55,15 @@ function usage() {
     echo "-n: The Amazon EC2 Key Name. Default: $default_key_name."
     echo "-b: The Amazon S3 Bucket Name. Default: $default_s3_bucket_name."
     echo "-r: The Amazon S3 Bucket Region. Default: $default_s3_bucket_region."
+    echo "-J: The Amazon EC2 Instance Type for JMeter Client. Default: $default_jmeter_client_ec2_instance_type."
+    echo "-S: The Amazon EC2 Instance Type for JMeter Server. Default: $default_jmeter_server_ec2_instance_type."
+    echo "-B: The Amazon EC2 Instance Type for Ballerina. Default: $default_ballerina_ec2_instance_type."
+    echo "-N: The Amazon EC2 Instance Type for Netty (Backend) Service. Default: $default_netty_ec2_instance_type."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "f:k:n:u:b:r:h" opts; do
+while getopts "f:k:n:u:b:r:J:S:B:N:h" opts; do
     case $opts in
     f)
         ballerina_performance_distribution=${OPTARG}
@@ -66,6 +82,18 @@ while getopts "f:k:n:u:b:r:h" opts; do
         ;;
     r)
         s3_bucket_region=${OPTARG}
+        ;;
+    J)
+        jmeter_client_ec2_instance_type=${OPTARG}
+        ;;
+    S)
+        jmeter_server_ec2_instance_type=${OPTARG}
+        ;;
+    B)
+        ballerina_ec2_instance_type=${OPTARG}
+        ;;
+    N)
+        netty_ec2_instance_type=${OPTARG}
         ;;
     h)
         usage
@@ -123,12 +151,51 @@ if [[ -z $s3_bucket_region ]]; then
     exit 1
 fi
 
+if [[ -z $jmeter_client_ec2_instance_type ]]; then
+    echo "Please provide the Amazon EC2 Instance Type for JMeter Client."
+    exit 1
+fi
+
+if [[ -z $jmeter_server_ec2_instance_type ]]; then
+    echo "Please provide the Amazon EC2 Instance Type for JMeter Server."
+    exit 1
+fi
+
+if [[ -z $ballerina_ec2_instance_type ]]; then
+    echo "Please provide the Amazon EC2 Instance Type for Ballerina."
+    exit 1
+fi
+
+if [[ -z $netty_ec2_instance_type ]]; then
+    echo "Please provide the Amazon EC2 Instance Type for Netty (Backend) Service."
+    exit 1
+fi
+
 key_filename=$(basename "$key_file")
 
 if [[ "${key_filename%.*}" != "$key_name" ]]; then
     echo "Key file must match with the key name. i.e. $key_filename should be equal to $key_name.pem."
     exit 1
 fi
+
+function format_time() {
+    # Duration in seconds
+    local duration="$1"
+    local minutes=$(echo "$duration/60" | bc)
+    local seconds=$(echo "$duration-$minutes*60" | bc)
+    if [[ $minutes -gt 0 ]]; then
+        printf "%d minute(s) and %02d second(s)\n" $minutes $seconds
+    else
+        printf "%d second(s)\n" $seconds
+    fi
+}
+
+function measure_time() {
+    local end_time=$(date +%s)
+    local start_time=$1
+    local duration=$(echo "$end_time - $start_time" | bc)
+    echo "$duration"
+}
 
 mkdir $results_dir
 echo "Results will be downloaded to $results_dir"
@@ -150,6 +217,7 @@ echo "Validating stack..."
 # Validate stack first
 aws cloudformation validate-template --template-body file://ballerina_perf_test_cfn.yaml
 
+stack_create_start_time=$(date +%s)
 create_stack_command="aws cloudformation create-stack --stack-name ballerina-test-stack \
     --template-body file://ballerina_perf_test_cfn.yaml --parameters \
     ParameterKey=KeyName,ParameterValue=$key_name \
@@ -157,6 +225,10 @@ create_stack_command="aws cloudformation create-stack --stack-name ballerina-tes
     ParameterKey=BucketRegion,ParameterValue=$s3_bucket_region \
     ParameterKey=PerformanceBallerinaDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
     ParameterKey=BallerinaInstallerURL,ParameterValue=$ballerina_installer_url \
+    ParameterKey=JMeterClientInstanceType,ParameterValue=$jmeter_client_ec2_instance_type \
+    ParameterKey=JMeterServerInstanceType,ParameterValue=$jmeter_server_ec2_instance_type \
+    ParameterKey=BallerinaInstanceType,ParameterValue=$ballerina_ec2_instance_type \
+    ParameterKey=BackendInstanceType,ParameterValue=$netty_ec2_instance_type \
     --capabilities CAPABILITY_IAM"
 
 echo "Creating stack..."
@@ -169,10 +241,13 @@ echo "Created stack: $stack_id"
 # Wait till completion
 echo "Waiting till the stack creation completes..."
 aws cloudformation wait stack-create-complete --stack-name $stack_id
+printf "Stack creation time: %s\n" "$(format_time $(measure_time $stack_create_start_time))"
 
 echo "Getting JMeter Client Public IP..."
 
 jmeter_client_ip="$(aws cloudformation describe-stacks --stack-name $stack_id --query 'Stacks[0].Outputs[?OutputKey==`JMeterClientPublicIP`].OutputValue' --output text)"
+
+echo "JMeter Client Public IP: $jmeter_client_ip"
 
 # JMeter servers must be 2 (according to the cloudformation script)
 run_performance_tests_command="./jmeter/run-performance-tests.sh ${run_performance_tests_options[@]} -n 2"
@@ -183,7 +258,7 @@ ssh -i $key_file -o "StrictHostKeyChecking=no" -t ubuntu@$jmeter_client_ip $run_
 scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results.zip $results_dir
 
 if [[ ! -f $results_dir/results.zip ]]; then
-    "Failed to download the results.zip"
+    echo "Failed to download the results.zip"
     exit 500
 fi
 
@@ -200,3 +275,5 @@ echo "Deleting the stack: $stack_id"
 aws cloudformation delete-stack --stack-name  $stack_id
 
 aws cloudformation wait stack-delete-complete --stack-name  $stack_id
+
+printf "Script execution time: %s\n" "$(format_time $(measure_time $script_start_time))"
