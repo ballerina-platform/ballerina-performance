@@ -151,8 +151,8 @@ function before_execute_test_scenario() {
 
 function after_execute_test_scenario() {
     write_server_metrics ballerina $ballerina_ssh_host ballerina.*/bre
-    scp -q $ballerina_ssh_host:ballerina/logs/ballerina.log ${report_location}/ballerina.log
-    scp -q $ballerina_ssh_host:ballerina/logs/gc.log ${report_location}/ballerina_gc.log
+    scp -q $ballerina_ssh_host:ballerina/bal/logs/ballerina.log ${report_location}/ballerina.log
+    scp -q $ballerina_ssh_host:ballerina/bal/logs/gc.log ${report_location}/ballerina_gc.log
 }
 
 test_scenarios
