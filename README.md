@@ -1,15 +1,9 @@
 # Ballerina Performance
 
-Ballerina Performance is used to continuously test performance against the latest released ballerina distribution. The following scenarios are covered with this ballerina performance testing.
+Ballerina performance artifacts are used to continuously test the performance of Ballerina services.
 
-- passthrough.bal
-- https_passthrough.bal
-- transformation.bal
-- https_transformation.bal
-- http2_https_passthrough.bal
-- websocket.bal
-
-Performance tests will be executed on a deployment of 5 instances with Jmeter Client, Jmeter Server1, Jmeter Server2, Ballerina and Netty Backend.
+These script use AWS CloudFormation to create a deployment of 5 EC2 instances for
+Apache JMeter Client, 2 Apache JMeter Servers, Ballerina and Netty Backend Service.
 
 
 ## About Ballerina
@@ -27,10 +21,83 @@ An execution model composed of lightweight parallel worker units that are non-bl
 
 ## Run Performance Tests
 
-The performance test script is designed to include and exclude scenarios. It allows to change all the parameters as follows.
+You can run Ballerina Performance Tests from the source using the following instructions.
 
-     ./run-performance-test.sh [-u <concurrent_users>] [-b <message_sizes>] [-s <sleep_times>] [-m <heap_sizes>] [-d <test_duration>] [-w <warmup_time>] [-n <jmeter_servers>] [-j <jmeter_server_heap_size>] [-k <jmeter_client_heap_size>] [-i <include_scenario_name>] [-e <include_scenario_name>] [-t] [-p <estimated_processing_time_in_between_tests>] [-h]
+### Prerequisites
 
+* [Maven 3.5.0 or later](https://maven.apache.org/download.cgi)
+* [AWS CLI](https://aws.amazon.com/cli/)
+
+#### Steps to run performance tests.
+
+1. Clone this repository using the following command.
+
+    git clone https://github.com/ballerina-platform/ballerina-performance
+
+2. Run the Maven command ``mvn clean install`` from the repository root directory.
+
+3. Change directory to `cloudformation/target` and extract distribution
+
+    tar -xf ballerina-performance-distribution-*.tar.gz
+
+4. Estimate time to run the performance tests using `-t` flags. You can include or exclude scenarios. Change parameters.
+
+    ./jmeter/run-performance-tests.sh -t
+    
+See usage:
+    ./jmeter/run-performance-tests.sh -h
+
+    Usage: 
+    ./jmeter/run-performance-tests.sh [-u <concurrent_users>] [-b <message_sizes>] [-s <sleep_times>] [-m <heap_sizes>] [-d <test_duration>] [-w <warmup_time>]
+       [-n <jmeter_servers>] [-j <jmeter_server_heap_size>] [-k <jmeter_client_heap_size>] [-l <netty_service_heap_size>]
+       [-i <include_scenario_name>] [-e <include_scenario_name>] [-t] [-p <estimated_processing_time_in_between_tests>] [-h]
+    
+    -u: Concurrent Users to test. Multiple users must be separated by spaces. Default "50 100 150 500 1000".
+    -b: Message sizes in bytes. Multiple message sizes must be separated by spaces. Default "50 1024 10240".
+    -s: Backend Sleep Times in milliseconds. Multiple sleep times must be separated by spaces. Default "0 30 500 1000".
+    -m: Application heap memory sizes. Multiple heap memory sizes must be separated by spaces. Default "2g".
+    -d: Test Duration in seconds. Default 900.
+    -w: Warm-up time in minutes. Default 5.
+    -n: Number of JMeter servers. If n=1, only client will be used. If n > 1, remote JMeter servers will be used. Default 1.
+    -j: Heap Size of JMeter Server. Default 4g.
+    -k: Heap Size of JMeter Client. Default 2g.
+    -l: Heap Size of Netty Service. Default 4g.
+    -i: Scenario name to to be included. You can give multiple options to filter scenarios.
+    -e: Scenario name to to be excluded. You can give multiple options to filter scenarios.
+    -t: Estimate time without executing tests.
+    -p: Estimated processing time in between tests in seconds. Default 60.
+    -h: Display this help and exit.
+
+5. Go back to `cloudformation` directory and use `./run-performance-tests.sh` to run tests. Use flags used in step 4 without the `-t` flags.
+
+For example:
+
+    ./run-performance-tests.sh -f target/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz -k ~/keys/ballerina-perf-test.pem 
+    -u https://product-dist.ballerina.io/downloads/0.981.1/ballerina-platform-linux-installer-x64-0.981.1.deb 
+    -- -d 180 -w 1 -i passthrough_http -e https -u 100 -b 50 -s 0 -j 256m -k 256m -m 256m -l 256m
+
+See usage:
+
+    ./run-performance-tests.sh -h
+
+    Usage: 
+    ./run-performance-tests.sh -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-n <key_name>]
+       [-b <s3_bucket_name>] [-r <s3_bucket_region>]
+       [-J <jmeter_client_ec2_instance_type>] [-S <jmeter_server_ec2_instance_type>]
+       [-B <ballerina_ec2_instance_type>] [-N <netty_ec2_instance_type>]
+       [-h] -- [run_performance_tests_options]
+    
+    -f: The Ballerina Performance Distribution containing the scripts to run performance tests.
+    -k: The Amazon EC2 Key File.
+    -u: The Ballerina Installer URL.
+    -n: The Amazon EC2 Key Name. Default: ballerina-perf-test.
+    -b: The Amazon S3 Bucket Name. Default: ballerinaperformancetest.
+    -r: The Amazon S3 Bucket Region. Default: us-east-2.
+    -J: The Amazon EC2 Instance Type for JMeter Client. Default: t2.micro.
+    -S: The Amazon EC2 Instance Type for JMeter Server. Default: t2.micro.
+    -B: The Amazon EC2 Instance Type for Ballerina. Default: t2.micro.
+    -N: The Amazon EC2 Instance Type for Netty (Backend) Service. Default: t2.micro.
+    -h: Display this help and exit.
 
 ## Contributing to Ballerina
 
