@@ -24,15 +24,15 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>ballerina-performance-distribution</artifactId>
+    <artifactId>ballerina-performance-cloudformation</artifactId>
     <packaging>pom</packaging>
-    <name>Ballerina Performance Distribution</name>
-    <description>Package for all scripts</description>
+    <name>Ballerina Performance Cloudformation</name>
+    <description>Scripts to fully automate performance tests</description>
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.performance.common</groupId>
-            <artifactId>performance-common-distribution</artifactId>
+            <groupId>io.ballerina</groupId>
+            <artifactId>ballerina-performance-distribution</artifactId>
             <type>tar.gz</type>
         </dependency>
     </dependencies>
@@ -41,19 +41,24 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>distribution</id>
+                        <id>copy</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>single</goal>
+                            <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/bin.xml</descriptor>
-                            </descriptors>
-                            <appendAssemblyId>false</appendAssemblyId>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.ballerina</groupId>
+                                    <artifactId>ballerina-performance-distribution</artifactId>
+                                    <type>tar.gz</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
                     </execution>
                 </executions>
