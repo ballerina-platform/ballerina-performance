@@ -58,8 +58,8 @@ $ ./jmeter/run-performance-tests.sh -t
     
 See usage:
 
-```console
-$ ./jmeter/run-performance-tests.sh -h
+```
+./jmeter/run-performance-tests.sh -h
 
 Usage: 
 ./jmeter/run-performance-tests.sh [-u <concurrent_users>] [-b <message_sizes>] [-s <sleep_times>] [-m <heap_sizes>] [-d <test_duration>] [-w <warmup_time>]
@@ -89,16 +89,16 @@ You can use `--` to indicate the end of command options.
 
 For example:
 
-```console
-$ ./run-performance-tests.sh -f target/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz -k ~/keys/ballerina-perf-test.pem \
+```
+./run-performance-tests.sh -f target/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz -k ~/keys/ballerina-perf-test.pem \
     -u https://product-dist.ballerina.io/downloads/0.981.1/ballerina-platform-linux-installer-x64-0.981.1.deb \
     -- -d 180 -w 1 -i passthrough_http -e https -u 100 -b 50 -s 0 -j 256m -k 256m -m 256m -l 256m
 ```
 
 See usage:
 
-```console
-$ ./run-performance-tests.sh -h
+```
+./run-performance-tests.sh -h
 
 Usage: 
 ./run-performance-tests.sh -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-n <key_name>]
