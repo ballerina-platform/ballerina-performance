@@ -85,7 +85,7 @@ Usage:
 
 5. Go back to `cloudformation` directory and use `./run-performance-tests.sh` to run tests. 
 Use flags used in step 4 without the `-t` flags after specifying flags for the `./run-performance-tests.sh`.
-You can use `--` to indicate the end of command options.  
+You can use `--` to indicate the end of command options.
 
 For example:
 
@@ -94,6 +94,8 @@ For example:
     -u https://product-dist.ballerina.io/downloads/0.981.1/ballerina-platform-linux-installer-x64-0.981.1.deb \
     -- -d 180 -w 1 -i passthrough_http -e https -u 100 -b 50 -s 0 -j 256m -k 256m -m 256m -l 256m
 ```
+
+Please note that this script also needs an existing S3 Bucket name and the region of the S3 Bucket.
 
 See usage:
 
