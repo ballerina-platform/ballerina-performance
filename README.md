@@ -2,9 +2,13 @@
 
 Ballerina performance artifacts are used to continuously test the performance of Ballerina services.
 
-These script use AWS CloudFormation to create a deployment of 5 EC2 instances for
-Apache JMeter Client, 2 Apache JMeter Servers, Ballerina and Netty Backend Service.
+These performance test scripts make use of Apache JMeter and a simple Netty Backend Service, which can echo back any 
+requests and also add a configurable delay to the response.
 
+In order to support a large number of concurrent users, two or more JMeter Servers can be used.
+
+To fully automate the performance tests, an AWS CloudFormation template is used to create a deployment of 5 EC2 
+instances for Apache JMeter Client, 2 Apache JMeter Servers, Ballerina and Netty Backend Service.
 
 ## About Ballerina
 
@@ -26,13 +30,14 @@ You can run Ballerina Performance Tests from the source using the following inst
 ### Prerequisites
 
 * [Maven 3.5.0 or later](https://maven.apache.org/download.cgi)
-* [AWS CLI](https://aws.amazon.com/cli/)
+* [AWS CLI](https://aws.amazon.com/cli/) - Please make sure to [configure the AWS Cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html)
+and set the output format to `text`.
 
 #### Steps to run performance tests.
 
 1. Clone this repository using the following command.
 
-```bash
+```
 git clone https://github.com/ballerina-platform/ballerina-performance
 ```
 
@@ -40,20 +45,21 @@ git clone https://github.com/ballerina-platform/ballerina-performance
 
 3. Change directory to `cloudformation/target` and extract distribution
 
-```bash
-tar -xf ballerina-performance-distribution-*.tar.gz
+```
+$ tar -xf ballerina-performance-distribution-*.tar.gz
 ```
 
-4. Estimate time to run the performance tests using `-t` flag. You can include or exclude scenarios. Change parameters as required.
+4. Estimate time to run the performance tests using `-t` flag on `./jmeter/run-performance-tests.sh` script. 
+You can include or exclude scenarios. You can also change parameters as required.
 
-```bash
-./jmeter/run-performance-tests.sh -t
+```
+$ ./jmeter/run-performance-tests.sh -t
 ```
     
 See usage:
 
-```bash
-./jmeter/run-performance-tests.sh -h
+```console
+$ ./jmeter/run-performance-tests.sh -h
 
 Usage: 
 ./jmeter/run-performance-tests.sh [-u <concurrent_users>] [-b <message_sizes>] [-s <sleep_times>] [-m <heap_sizes>] [-d <test_duration>] [-w <warmup_time>]
@@ -77,20 +83,22 @@ Usage:
 -h: Display this help and exit.
 ```
 
-5. Go back to `cloudformation` directory and use `./run-performance-tests.sh` to run tests. Use flags used in step 4 without the `-t` flags.
+5. Go back to `cloudformation` directory and use `./run-performance-tests.sh` to run tests. 
+Use flags used in step 4 without the `-t` flags after specifying flags for the `./run-performance-tests.sh`.
+You can use `--` to indicate the end of command options.  
 
 For example:
 
-```bash
-./run-performance-tests.sh -f target/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz -k ~/keys/ballerina-perf-test.pem 
-    -u https://product-dist.ballerina.io/downloads/0.981.1/ballerina-platform-linux-installer-x64-0.981.1.deb 
+```console
+$ ./run-performance-tests.sh -f target/performance-ballerina-distribution-0.1.0-SNAPSHOT.tar.gz -k ~/keys/ballerina-perf-test.pem \
+    -u https://product-dist.ballerina.io/downloads/0.981.1/ballerina-platform-linux-installer-x64-0.981.1.deb \
     -- -d 180 -w 1 -i passthrough_http -e https -u 100 -b 50 -s 0 -j 256m -k 256m -m 256m -l 256m
 ```
 
 See usage:
 
-```bash
-./run-performance-tests.sh -h
+```console
+$ ./run-performance-tests.sh -h
 
 Usage: 
 ./run-performance-tests.sh -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-n <key_name>]
