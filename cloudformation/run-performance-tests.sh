@@ -39,6 +39,8 @@ default_ballerina_ec2_instance_type="t2.micro"
 ballerina_ec2_instance_type="$default_ballerina_ec2_instance_type"
 default_netty_ec2_instance_type="t2.micro"
 netty_ec2_instance_type="$default_netty_ec2_instance_type"
+default_minimum_stack_creation_wait_time=10
+minimum_stack_creation_wait_time=$default_minimum_stack_creation_wait_time
 
 function usage() {
     echo ""
@@ -47,6 +49,7 @@ function usage() {
     echo "   [-b <s3_bucket_name>] [-r <s3_bucket_region>]"
     echo "   [-J <jmeter_client_ec2_instance_type>] [-S <jmeter_server_ec2_instance_type>]"
     echo "   [-B <ballerina_ec2_instance_type>] [-N <netty_ec2_instance_type>]"
+    echo "   [-w <minimum_stack_creation_wait_time>]"
     echo "   [-h] -- [run_performance_tests_options]"
     echo ""
     echo "-f: The Ballerina Performance Distribution containing the scripts to run performance tests."
@@ -59,11 +62,13 @@ function usage() {
     echo "-S: The Amazon EC2 Instance Type for JMeter Server. Default: $default_jmeter_server_ec2_instance_type."
     echo "-B: The Amazon EC2 Instance Type for Ballerina. Default: $default_ballerina_ec2_instance_type."
     echo "-N: The Amazon EC2 Instance Type for Netty (Backend) Service. Default: $default_netty_ec2_instance_type."
+    echo "-w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status."
+    echo "    Default: $default_minimum_stack_creation_wait_time."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "f:k:n:u:b:r:J:S:B:N:h" opts; do
+while getopts "f:k:n:u:b:r:J:S:B:N:w:h" opts; do
     case $opts in
     f)
         ballerina_performance_distribution=${OPTARG}
@@ -94,6 +99,9 @@ while getopts "f:k:n:u:b:r:J:S:B:N:h" opts; do
         ;;
     N)
         netty_ec2_instance_type=${OPTARG}
+        ;;
+    w)
+        minimum_stack_creation_wait_time=${OPTARG}
         ;;
     h)
         usage
@@ -171,6 +179,11 @@ if [[ -z $netty_ec2_instance_type ]]; then
     exit 1
 fi
 
+if ! [[ $minimum_stack_creation_wait_time =~ ^[0-9]+$ ]]; then
+    echo "Please provide a valid minimum time to wait before polling for cloudformation stack's CREATE_COMPLETE status."
+    exit 1
+fi
+
 key_filename=$(basename "$key_file")
 
 if [[ "${key_filename%.*}" != "$key_name" ]]; then
@@ -238,8 +251,15 @@ stack_id="$($create_stack_command)"
 
 echo "Created stack: $stack_id"
 
+# Sleep for sometime before waiting
+# This is required since the 'aws cloudformation wait stack-create-complete' will exit with a
+# return code of 255 after 120 failed checks. The command polls every 30 seconds, which means that the
+# maximum wait time is one hour.
+# Due to the dependencies in CloudFormation template, the stack creation may take more than one hour.
+echo "Waiting ${minimum_stack_creation_wait_time}m before polling for cloudformation stack's CREATE_COMPLETE status..."
+sleep ${minimum_stack_creation_wait_time}m
 # Wait till completion
-echo "Waiting till the stack creation completes..."
+echo "Polling till the stack creation completes..."
 aws cloudformation wait stack-create-complete --stack-name $stack_id
 printf "Stack creation time: %s\n" "$(format_time $(measure_time $stack_create_start_time))"
 
@@ -273,8 +293,8 @@ echo "Converting summary results to markdown format..."
 ./jmeter/csv-to-markdown-converter.py summary.csv summary.md
 
 echo "Deleting the stack: $stack_id"
-aws cloudformation delete-stack --stack-name  $stack_id
+aws cloudformation delete-stack --stack-name $stack_id
 
-aws cloudformation wait stack-delete-complete --stack-name  $stack_id
+aws cloudformation wait stack-delete-complete --stack-name $stack_id
 
 printf "Script execution time: %s\n" "$(format_time $(measure_time $script_start_time))"
