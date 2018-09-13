@@ -85,7 +85,7 @@ echo "Setting Heap to ${heap_size}"
 echo "Enabling GC Logs"
 export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${ballerina_path}/logs/gc.log -Xms${heap_size} -Xmx${heap_size}"
 
-ballerina_command="ballerina run ${bal_file} $bal_flags"
+ballerina_command="ballerina run ${bal_flags} ${bal_file}"
 echo "Starting Ballerina: $ballerina_command"
 cd $ballerina_path
 nohup $ballerina_command &>${ballerina_path}/logs/ballerina.log &
