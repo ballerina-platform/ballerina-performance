@@ -196,7 +196,11 @@ function format_time() {
     local duration="$1"
     local minutes=$(echo "$duration/60" | bc)
     local seconds=$(echo "$duration-$minutes*60" | bc)
-    if [[ $minutes -gt 0 ]]; then
+    if [[ $minutes -ge 60 ]]; then
+        local hours=$(echo "$minutes/60" | bc)
+        minutes=$(echo "$minutes-$hours*60" | bc)
+        printf "%d hour(s), %02d minute(s) and %02d second(s)\n" $hours $minutes $seconds
+    elif [[ $minutes -gt 0 ]]; then
         printf "%d minute(s) and %02d second(s)\n" $minutes $seconds
     else
         printf "%d second(s)\n" $seconds
@@ -296,9 +300,12 @@ wget -q http://sourceforge.net/projects/gcviewer/files/gcviewer-1.35.jar/downloa
 echo "Converting summary results to markdown format..."
 ./jmeter/csv-to-markdown-converter.py summary.csv summary.md
 
+stack_delete_start_time=$(date +%s)
 echo "Deleting the stack: $stack_id"
 aws cloudformation delete-stack --stack-name $stack_id
 
+echo "Polling till the stack deletion completes..."
 aws cloudformation wait stack-delete-complete --stack-name $stack_id
+printf "Stack deletion time: %s\n" "$(format_time $(measure_time $stack_delete_start_time))"
 
 printf "Script execution time: %s\n" "$(format_time $(measure_time $script_start_time))"
