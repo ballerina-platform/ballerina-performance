@@ -191,6 +191,19 @@ if [[ "${key_filename%.*}" != "$key_name" ]]; then
     exit 1
 fi
 
+function check_command() {
+    if ! command -v $1 >/dev/null 2>&1; then
+        echo "Please install $1"
+        exit 1
+    fi
+}
+
+check_command bc
+check_command aws
+check_command unzip
+check_command jq
+check_command python
+
 function format_time() {
     # Duration in seconds
     local duration="$1"
