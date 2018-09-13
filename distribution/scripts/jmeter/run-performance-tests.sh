@@ -126,16 +126,16 @@ declare -A test_scenario13=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario14=(
-    [name]="passthrough_http_observe_tracing_noop"
-    [bal]="passthrough.balx"
-    [bal_flags]="-e b7a.observability.tracing.enabled=true -e b7a.observability.tracing.name=noop"
-    [path]="/passthrough"
-    [jmx]="http-post-request.jmx"
-    [protocol]="http"
-    [use_backend]=true
-    [skip]=true
-)
+# declare -A test_scenario14=(
+#     [name]="passthrough_http_observe_tracing_noop"
+#     [bal]="passthrough.balx"
+#     [bal_flags]="-e b7a.observability.tracing.enabled=true -e b7a.observability.tracing.name=noop"
+#     [path]="/passthrough"
+#     [jmx]="http-post-request.jmx"
+#     [protocol]="http"
+#     [use_backend]=true
+#     [skip]=true
+# )
 
 function before_execute_test_scenario() {
     local bal_file=${scenario[bal]}
