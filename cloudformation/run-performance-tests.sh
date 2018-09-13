@@ -215,8 +215,12 @@ echo "Results will be downloaded to $results_dir"
 
 temp_dir=$(mktemp -d)
 
-ln -s $(realpath $key_file) $temp_dir/$key_filename
-ln -s $(realpath $ballerina_performance_distribution) $temp_dir/$ballerina_performance_distribution_filename
+# Get absolute paths
+key_file=$(realpath $key_file)
+ballerina_performance_distribution=$(realpath $ballerina_performance_distribution)
+
+ln -s $key_file $temp_dir/$key_filename
+ln -s $ballerina_performance_distribution $temp_dir/$ballerina_performance_distribution_filename
 
 echo "Syncing files in $temp_dir to S3 Bucket $s3_bucket_name..."
 aws s3 sync $temp_dir s3://$s3_bucket_name
