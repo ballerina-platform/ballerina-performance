@@ -102,8 +102,13 @@ nohup $ballerina_command &>${ballerina_path}/logs/ballerina.log &
 
 # TODO Do a curl and check if service is started
 echo "Waiting to make sure that the server is ready to accept requests."
-while ! nc -zv localhost 9090; do
-    sleep 5
+n=0
+until [ $n -ge 60 ]; do
+    nc -zv localhost 9090 && break
+    n=$(($n + 1))
+    sleep 1
 done
 
+# Wait few more seconds to get logs
+sleep 5
 tail -10 ${ballerina_path}/logs/ballerina.log
