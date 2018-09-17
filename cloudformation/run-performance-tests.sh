@@ -307,8 +307,10 @@ echo "JMeter Client Public IP: $jmeter_client_ip"
 # JMeter servers must be 2 (according to the cloudformation script)
 run_performance_tests_command="./jmeter/run-performance-tests.sh ${run_performance_tests_options[@]} -n 2"
 # Run performance tests
-echo "Running performance tests: $run_performance_tests_command"
-ssh -i $key_file -o "StrictHostKeyChecking=no" -t ubuntu@$jmeter_client_ip $run_performance_tests_command
+run_remote_tests="ssh -i $key_file -o "StrictHostKeyChecking=no" -t ubuntu@$jmeter_client_ip $run_performance_tests_command"
+echo "Running performance tests: $run_remote_tests"
+# Handle any error and let the script continue.
+$run_remote_tests || echo "Remote test ssh command failed."
 
 scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results.zip $results_dir
 
