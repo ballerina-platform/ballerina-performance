@@ -230,8 +230,8 @@ function measure_time() {
 mkdir $results_dir
 echo "Results will be downloaded to $results_dir"
 
-echo "Extracting Ballerian Performance Distribution to $results_dir"
-tar -xvf $ballerina_performance_distribution -C $results_dir
+echo "Extracting Ballerina Performance Distribution to $results_dir"
+tar -xf $ballerina_performance_distribution -C $results_dir
 
 estimate_command="$results_dir/jmeter/run-performance-tests.sh -t ${run_performance_tests_options[@]}"
 echo "Estimating time for performance tests: $estimate_command"
