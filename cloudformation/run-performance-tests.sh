@@ -230,6 +230,14 @@ function measure_time() {
 mkdir $results_dir
 echo "Results will be downloaded to $results_dir"
 
+echo "Extracting Ballerian Performance Distribution to $results_dir"
+tar -xvf $ballerina_performance_distribution -C $results_dir
+
+estimate_command="$results_dir/jmeter/run-performance-tests.sh -t ${run_performance_tests_options[@]}"
+echo "Estimating time for performance tests: $estimate_command"
+# Estimating this script will also validate the options. It's important to validate options before creating the stack.
+$estimate_command
+
 temp_dir=$(mktemp -d)
 
 # Get absolute paths
@@ -321,7 +329,6 @@ fi
 
 echo "Creating summary.csv..."
 cd $results_dir
-tar -xf $ballerina_performance_distribution
 unzip -q results.zip
 wget -q http://sourceforge.net/projects/gcviewer/files/gcviewer-1.35.jar/download -O gcviewer.jar
 ./jmeter/create-summary-csv.sh -d results -n Ballerina -p ballerina -j 2 -g gcviewer.jar
