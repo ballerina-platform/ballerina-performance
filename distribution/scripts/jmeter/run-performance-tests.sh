@@ -144,7 +144,7 @@ function before_execute_test_scenario() {
     local protocol=${scenario[protocol]}
     jmeter_params+=("host=$ballerina_host" "port=9090" "path=$service_path")
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol")
-    JMETER_JVM_ARGS="-Xbootclasspath/p:$HOME/alpnboot.jar"
+    JMETER_JVM_ARGS="-Xbootclasspath/p:/opt/alpnboot/alpnboot.jar"
     echo "Starting Ballerina Service. Ballerina Program: $bal_file, Heap: $heap, Flags: ${bal_flags:-N/A}"
     ssh $ballerina_ssh_host "./ballerina/ballerina-start.sh -p $HOME/ballerina/bal -b $bal_file -m $heap -- $bal_flags"
 }
