@@ -77,6 +77,14 @@ fi
 if pgrep -f ballerina.*/bre >/dev/null; then
     echo "Shutting down Ballerina"
     pkill -f ballerina.*/bre
+    # Wait for few seconds
+    sleep 5
+fi
+
+# Check whether process exists
+if pgrep -f ballerina.*/bre >/dev/null; then
+    echo "Killing Ballerina process!!"
+    pkill -9 -f ballerina.*/bre
 fi
 
 if [ ! -d "${ballerina_path}/logs" ]; then
