@@ -93,15 +93,16 @@ fi
 
 log_files=(${ballerina_path}/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
-    echo "Log files exists. Moving to /tmp/${ballerina_file}/"
-    mkdir -p /tmp/${ballerina_file}
-    mv ${ballerina_path}/logs/* /tmp/${ballerina_file}/
+    echo "Log files exists. Moving to /tmp/"
+    mv ${ballerina_path}/logs/* /tmp/
 fi
 
 echo "Setting Heap to ${heap_size}"
 
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${ballerina_path}/logs/gc.log -Xms${heap_size} -Xmx${heap_size}"
+export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${ballerina_path}/logs/gc.log"
+JAVA_OPTS+=" -Xms${heap_size} -Xmx${heap_size}"
+JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${ballerina_path}/logs/heap-dump.hprof""
 
 ballerina_command="ballerina run ${bal_flags} ${ballerina_file}"
 echo "Starting Ballerina: $ballerina_command"

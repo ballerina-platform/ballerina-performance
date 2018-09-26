@@ -151,8 +151,9 @@ function before_execute_test_scenario() {
 
 function after_execute_test_scenario() {
     write_server_metrics ballerina $ballerina_ssh_host ballerina.*/bre
-    scp -q $ballerina_ssh_host:ballerina/bal/logs/ballerina.log ${report_location}/ballerina.log
-    scp -q $ballerina_ssh_host:ballerina/bal/logs/gc.log ${report_location}/ballerina_gc.log
+    download_file $ballerina_ssh_host ballerina/bal/logs/ballerina.log ballerina.log
+    download_file $ballerina_ssh_host ballerina/bal/logs/gc.log ballerina_gc.log
+    download_file $ballerina_ssh_host ballerina/bal/logs/heap-dump.hprof ballerina_heap_dump.hprof
 }
 
 test_scenarios
