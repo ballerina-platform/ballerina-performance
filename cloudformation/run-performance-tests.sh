@@ -237,6 +237,8 @@ function measure_time() {
     echo "$duration"
 }
 
+# Use absolute path
+results_dir=$(realpath $results_dir)
 mkdir $results_dir
 echo "Results will be downloaded to $results_dir"
 
