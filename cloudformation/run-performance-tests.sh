@@ -21,7 +21,8 @@
 
 script_start_time=$(date +%s)
 script_dir=$(dirname "$0")
-results_dir="$PWD/results-$(date +%Y%m%d%H%M%S)"
+default_results_dir="$PWD/results-$(date +%Y%m%d%H%M%S)"
+results_dir="$default_results_dir"
 ballerina_performance_distribution=""
 key_file=""
 ballerina_installer_url=""
@@ -45,7 +46,7 @@ minimum_stack_creation_wait_time=$default_minimum_stack_creation_wait_time
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-n <key_name>]"
+    echo "$0 -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-d <results_dir>] [-n <key_name>]"
     echo "   [-b <s3_bucket_name>] [-r <s3_bucket_region>]"
     echo "   [-J <jmeter_client_ec2_instance_type>] [-S <jmeter_server_ec2_instance_type>]"
     echo "   [-B <ballerina_ec2_instance_type>] [-N <netty_ec2_instance_type>]"
@@ -55,6 +56,7 @@ function usage() {
     echo "-f: The Ballerina Performance Distribution containing the scripts to run performance tests."
     echo "-k: The Amazon EC2 Key File."
     echo "-u: The Ballerina Installer URL."
+    echo "-d: The results directory. Default value is a directory with current time. For example, $default_results_dir."
     echo "-n: The Amazon EC2 Key Name. Default: $default_key_name."
     echo "-b: The Amazon S3 Bucket Name. Default: $default_s3_bucket_name."
     echo "-r: The Amazon S3 Bucket Region. Default: $default_s3_bucket_region."
@@ -68,7 +70,7 @@ function usage() {
     echo ""
 }
 
-while getopts "f:k:n:u:b:r:J:S:B:N:w:h" opts; do
+while getopts "f:k:n:u:d:b:r:J:S:B:N:w:h" opts; do
     case $opts in
     f)
         ballerina_performance_distribution=${OPTARG}
@@ -81,6 +83,9 @@ while getopts "f:k:n:u:b:r:J:S:B:N:w:h" opts; do
         ;;
     u)
         ballerina_installer_url=${OPTARG}
+        ;;
+    d)
+        results_dir=${OPTARG}
         ;;
     b)
         s3_bucket_name=${OPTARG}
@@ -141,6 +146,11 @@ fi
 
 if [[ -z $ballerina_installer_url ]]; then
     echo "Please provide the Ballerina Installer URL."
+    exit 1
+fi
+
+if [[ -d $results_dir ]]; then
+    echo "Results directory already exists. Please give a new name to the results directory."
     exit 1
 fi
 
