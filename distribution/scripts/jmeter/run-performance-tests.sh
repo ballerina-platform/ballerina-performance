@@ -23,8 +23,11 @@ script_dir=$(dirname "$0")
 # Execute common script
 . $script_dir/perf-test-common.sh
 
-ballerina_ssh_host=ballerina
-ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
+function initialize() {
+    export ballerina_ssh_host=ballerina
+    export ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
+}
+export -f initialize
 
 declare -A test_scenario0=(
     [name]="passthrough_http"
