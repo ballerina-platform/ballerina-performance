@@ -23,11 +23,16 @@ script_dir=$(dirname "$0")
 # Execute common script
 . $script_dir/perf-test-common.sh
 
-ballerina_ssh_host=ballerina
-ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
+function initialize() {
+    export ballerina_ssh_host=ballerina
+    export ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
+}
+export -f initialize
 
 declare -A test_scenario0=(
     [name]="passthrough_http"
+    [display_name]="Passthrough HTTP service"
+    [description]="An HTTP Service, which forwards all requests to a back-end service."
     [bal]="passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
@@ -38,6 +43,8 @@ declare -A test_scenario0=(
 )
 declare -A test_scenario1=(
     [name]="passthrough_https"
+    [display_name]="Passthrough HTTPS service"
+    [description]="An HTTPS Service, which forwards all requests to a back-end service."
     [bal]="https_passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
@@ -48,6 +55,8 @@ declare -A test_scenario1=(
 )
 declare -A test_scenario2=(
     [name]="transformation_http"
+    [display_name]="JSON to XML transformation HTTP service"
+    [description]="An HTTP Service, which transforms JSON requests to XML and then forwards all requests to a back-end service."
     [bal]="transformation.balx"
     [bal_flags]=""
     [path]="/transform"
@@ -58,6 +67,8 @@ declare -A test_scenario2=(
 )
 declare -A test_scenario3=(
     [name]="transformation_https"
+    [display_name]="JSON to XML transformation HTTPS service"
+    [description]="An HTTPS Service, which transforms JSON requests to XML and then forwards all requests to a back-end service."
     [bal]="https_transformation.balx"
     [bal_flags]=""
     [path]="/transform"
@@ -68,7 +79,9 @@ declare -A test_scenario3=(
 )
 declare -A test_scenario4=(
     [name]="passthrough_http2_https"
+    [display_name]="Passthrough HTTP2 (HTTPS) service"
     [bal]="http2_https_passthrough.balx"
+    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a back-end service."
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http2-post-request.jmx"
@@ -78,6 +91,8 @@ declare -A test_scenario4=(
 )
 declare -A test_scenario5=(
     [name]="websocket"
+    [display_name]="Websocket"
+    [description]="Websocket service"
     [bal]="websocket.balx"
     [bal_flags]=""
     [path]="/basic/ws"
@@ -88,6 +103,8 @@ declare -A test_scenario5=(
 )
 declare -A test_scenario10=(
     [name]="passthrough_http_observe_default"
+    [display_name]="Passthrough HTTP Service with Default Observability"
+    [description]="Observability with default configs"
     [bal]="passthrough.balx"
     [bal_flags]="--observe"
     [path]="/passthrough"
@@ -98,6 +115,8 @@ declare -A test_scenario10=(
 )
 declare -A test_scenario11=(
     [name]="passthrough_http_observe_metrics"
+    [display_name]="Passthrough HTTP Service with Metrics"
+    [description]="Metrics only"
     [bal]="passthrough.balx"
     [bal_flags]="-e b7a.observability.metrics.enabled=true"
     [path]="/passthrough"
@@ -108,6 +127,8 @@ declare -A test_scenario11=(
 )
 declare -A test_scenario12=(
     [name]="passthrough_http_observe_tracing"
+    [display_name]="Passthrough HTTP Service with Tracing"
+    [description]="Tracing only"
     [bal]="passthrough.balx"
     [bal_flags]="-e b7a.observability.tracing.enabled=true"
     [path]="/passthrough"
@@ -118,6 +139,8 @@ declare -A test_scenario12=(
 )
 declare -A test_scenario13=(
     [name]="passthrough_http_observe_metrics_noop"
+    [display_name]="Passthrough HTTP Service with Metrics (No-Op)"
+    [description]="Metrics (with No-Op implementation) only"
     [bal]="passthrough.balx"
     [bal_flags]="-e b7a.observability.metrics.enabled=true -e b7a.observability.metrics.provider=noop"
     [path]="/passthrough"
@@ -128,6 +151,8 @@ declare -A test_scenario13=(
 )
 # declare -A test_scenario14=(
 #     [name]="passthrough_http_observe_tracing_noop"
+#     [display_name]="Passthrough HTTP Service with Tracing (No-Op)"
+#     [description]="Tracing (with No-Op implementation) only"
 #     [bal]="passthrough.balx"
 #     [bal_flags]="-e b7a.observability.tracing.enabled=true -e b7a.observability.tracing.name=noop"
 #     [path]="/passthrough"
