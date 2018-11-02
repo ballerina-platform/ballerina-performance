@@ -32,13 +32,13 @@ Description: >-
 Mappings:
   AWSRegion2AMI:
     us-east-1:
-      AMI: ami-0ac019f4fcb7cb7e6
+      AMI: ami-0977029b5b13f3d08
     us-east-2:
-      AMI: ami-0f65671a86f061fcd
+      AMI: ami-05f39e7b7f153bc6a
     us-west-1:
-      AMI: ami-063aa838bd7631e0b
+      AMI: ami-03d5270fcb641f79b
     us-west-2:
-      AMI: ami-0bbe6b35405ecebdb
+      AMI: ami-0f47ef92b4218ec09
 #############################
 # User inputs
 #############################
@@ -60,11 +60,21 @@ Parameters:
   PerformanceBallerinaDistributionName:
     Description: The name of the 'Performance Ballerina Distribution' package in S3 Bucket.
     Type: String
-  BallerinaInstallerURL:
-    Description: The URL of the Ballerina Debian Installer
+  JMeterDistributionName:
+    Description: The name of the 'Apache JMeter distribution' in S3 Bucket.
     Type: String
-    ConstraintDescription: must be a valid URL to a deb package
-    AllowedPattern: ^https?:\/\/.*\.deb$
+    ConstraintDescription: must be a valid tgz package
+    AllowedPattern: ^.*\.tgz$
+  BallerinaInstallerName:
+    Description: The name of the 'Ballerina Debian Installer' in S3 Bucket.
+    Type: String
+    ConstraintDescription: must be a valid deb package
+    AllowedPattern: ^.*\.deb$
+  OracleJDKDistributionName:
+    Description: The name of the 'Oracle JDK Distribution' in S3 Bucket.
+    Type: String
+    ConstraintDescription: must be a valid Oracle JDK
+    AllowedPattern: ^jdk-8u[0-9]+-linux-x64.tar.gz$
   JMeterClientInstanceType:
     Description: JMeter Client EC2 instance type
     Type: String
@@ -362,6 +372,32 @@ Resources:
               owner: ubuntu
               group: ubuntu
               authentication: "S3AccessCreds"
+            /home/ubuntu/apache-jmeter.tgz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref JMeterDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
+            /home/ubuntu/jdk-8-linux-x64.tar.gz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref OracleJDKDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
           commands:
             01_create_state_directory:
               command: mkdir -p /var/awslogs/state
@@ -421,6 +457,8 @@ Resources:
           # Must run setup script in User Data (Commands executed within cfn-init do not show the progress in logs)
           /home/ubuntu/setup/setup-jmeter-client-ballerina.sh -g -k /home/ubuntu/private_key.pem \
             -i /home/ubuntu \
+            -d /home/ubuntu/jdk-8-linux-x64.tar.gz \
+            -f /home/ubuntu/apache-jmeter.tgz \
             -c /home/ubuntu \
             -a jmeter1 -n ${JMeterServer1Instance.PrivateIp} \
             -a jmeter2 -n ${JMeterServer2Instance.PrivateIp} \
@@ -504,6 +542,32 @@ Resources:
               owner: ubuntu
               group: ubuntu
               authentication: "S3AccessCreds"
+            /home/ubuntu/apache-jmeter.tgz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref JMeterDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
+            /home/ubuntu/jdk-8-linux-x64.tar.gz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref OracleJDKDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
           commands:
             01_create_state_directory:
               command: mkdir -p /var/awslogs/state
@@ -561,7 +625,7 @@ Resources:
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource JMeterServer1Instance --region ${AWS::Region}
           # Run setup
-          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu
+          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu -d /home/ubuntu/jdk-8-linux-x64.tar.gz -f /home/ubuntu/apache-jmeter.tgz
           # Signal
           /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer1Instance --region ${AWS::Region}
     CreationPolicy:
@@ -640,6 +704,32 @@ Resources:
               owner: ubuntu
               group: ubuntu
               authentication: "S3AccessCreds"
+            /home/ubuntu/apache-jmeter.tgz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref JMeterDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
+            /home/ubuntu/jdk-8-linux-x64.tar.gz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref OracleJDKDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
           commands:
             01_create_state_directory:
               command: mkdir -p /var/awslogs/state
@@ -697,7 +787,7 @@ Resources:
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource JMeterServer2Instance --region ${AWS::Region}
           # Run setup
-          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu
+          /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu -d /home/ubuntu/jdk-8-linux-x64.tar.gz -f /home/ubuntu/apache-jmeter.tgz
           # Signal
           /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource JMeterServer2Instance --region ${AWS::Region}
     CreationPolicy:
@@ -776,6 +866,19 @@ Resources:
               owner: ubuntu
               group: ubuntu
               authentication: "S3AccessCreds"
+            /home/ubuntu/ballerina_installer.deb:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref BallerinaInstallerName
+              mode: '000775'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
           commands:
             01_create_state_directory:
               command: mkdir -p /var/awslogs/state
@@ -833,7 +936,7 @@ Resources:
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource BallerinaInstance --region ${AWS::Region}
           # Run setup
-          /home/ubuntu/setup/setup-ballerina.sh -g -u ${BallerinaInstallerURL} -n ${BackendInstance.PrivateIp}
+          /home/ubuntu/setup/setup-ballerina.sh -g -d /home/ubuntu/ballerina_installer.deb -n ${BackendInstance.PrivateIp}
           # Signal
           /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource BallerinaInstance --region ${AWS::Region}
     CreationPolicy:
@@ -912,6 +1015,19 @@ Resources:
               owner: ubuntu
               group: ubuntu
               authentication: "S3AccessCreds"
+            /home/ubuntu/jdk-8-linux-x64.tar.gz:
+              source: !Join
+                - ''
+                - - 'https://s3.'
+                  - !Ref BucketRegion
+                  - '.amazonaws.com/'
+                  - !Ref BucketName
+                  - /
+                  - !Ref OracleJDKDistributionName
+              mode: '000664'
+              owner: ubuntu
+              group: ubuntu
+              authentication: "S3AccessCreds"
           commands:
             01_create_state_directory:
               command: mkdir -p /var/awslogs/state
@@ -969,7 +1085,7 @@ Resources:
           # Initialize
           /usr/local/bin/cfn-init -v --stack ${AWS::StackId} --resource BackendInstance --region ${AWS::Region}
           # Run setup
-          /home/ubuntu/setup/setup-netty.sh -g
+          /home/ubuntu/setup/setup-netty.sh -g -d /home/ubuntu/jdk-8-linux-x64.tar.gz
           # Signal
           /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource BackendInstance --region ${AWS::Region}
     CreationPolicy:
@@ -979,3 +1095,6 @@ Outputs:
   JMeterClientPublicIP:
     Description: JMeter Client Public IP
     Value: !GetAtt JMeterClientInstance.PublicIp
+  LogGroupName:
+    Description: Log Group Name
+    Value: !Ref CloudFormationLogs
