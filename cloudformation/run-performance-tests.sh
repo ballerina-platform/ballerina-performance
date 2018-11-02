@@ -457,5 +457,11 @@ unzip -q results.zip
 wget -q http://sourceforge.net/projects/gcviewer/files/gcviewer-1.35.jar/download -O gcviewer.jar
 ./jmeter/create-summary-csv.sh -d results -n Ballerina -p ballerina -j 2 -g gcviewer.jar
 
-echo "Converting summary results to markdown format..."
-./jmeter/csv-to-markdown-converter.py summary.csv summary.md
+echo "Create summary results markdown file"
+# Use following to get all column names:
+# while IFS= read -r line; do echo -ne " \"$line\""; done < <(./jmeter/create-summary-csv.sh -n "Ballerina" -j 2 -i -x)
+
+./jmeter/create-summary-markdown.py --json-files cf-test-metadata.json results/test-metadata.json --column-names \
+    "Scenario Name" "Concurrent Users" "Message Size (Bytes)" "Back-end Service Delay (ms)" "Error %" "Throughput (Requests/sec)" \
+    "Average Response Time (ms)" "Standard Deviation of Response Time (ms)" "99th Percentile of Response Time (ms)" \
+    "Ballerina GC Throughput (%)" "Average of Ballerina Memory Footprint After Full GC (M)"
