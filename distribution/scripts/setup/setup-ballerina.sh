@@ -28,24 +28,24 @@ fi
 
 export script_name="$0"
 export script_dir=$(dirname "$0")
-export download_url=""
+export ballerina_installer=""
 export netty_host=""
 
 function usageCommand() {
-    echo "-u <download_url> -n <netty_host>"
+    echo "-d <ballerina_installer> -n <netty_host>"
 }
 export -f usageCommand
 
 function usageHelp() {
-    echo "-u: The download url of ballerina installer."
+    echo "-d: Ballerina Installer Debian Package."
     echo "-n: The hostname of Netty Service."
 }
 export -f usageHelp
 
-while getopts "gp:w:o:hu:n:" opt; do
+while getopts "gp:w:o:hd:n:" opt; do
     case "${opt}" in
-    u)
-        download_url=${OPTARG}
+    d)
+        ballerina_installer=${OPTARG}
         ;;
     n)
         netty_host=${OPTARG}
@@ -59,8 +59,8 @@ done
 shift "$((OPTIND - 1))"
 
 function validate() {
-    if [[ -z $download_url ]]; then
-        echo "Please provide the download url for the Ballerina Installer."
+    if [[ ! -f $ballerina_installer ]]; then
+        echo "Please provide Ballerina Installer."
         exit 1
     fi
 
@@ -72,11 +72,7 @@ function validate() {
 export -f validate
 
 function setup() {
-    if [[ ! -f ballerina_installer.deb ]]; then
-        echo "Downloading Ballerina distribution"
-        wget -q $download_url -O ballerina_installer.deb
-    fi
-    dpkg -i ballerina_installer.deb
+    dpkg -i $ballerina_installer
     echo "$netty_host netty" >>/etc/hosts
 
     # Build Ballerina Files

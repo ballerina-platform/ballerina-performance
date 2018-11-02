@@ -25,12 +25,18 @@ default_results_dir="$PWD/results-$(date +%Y%m%d%H%M%S)"
 results_dir="$default_results_dir"
 ballerina_performance_distribution=""
 key_file=""
-ballerina_installer_url=""
+ballerina_installer=""
+jmeter_distribution=""
+oracle_jdk_distribution=""
+default_stack_name="ballerina-performance-test-stack"
+stack_name="$default_stack_name"
+default_test_name="ballerina-performance-test"
+test_name="$default_test_name"
 default_key_name="ballerina-perf-test"
 key_name="$default_key_name"
 default_s3_bucket_name="ballerinaperformancetest"
 s3_bucket_name="$default_s3_bucket_name"
-default_s3_bucket_region="us-east-2"
+default_s3_bucket_region="us-east-1"
 s3_bucket_region="$default_s3_bucket_region"
 default_jmeter_client_ec2_instance_type="t2.micro"
 jmeter_client_ec2_instance_type="$default_jmeter_client_ec2_instance_type"
@@ -46,31 +52,36 @@ minimum_stack_creation_wait_time=$default_minimum_stack_creation_wait_time
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -f <ballerina_performance_distribution> -k <key_file> -u <ballerina_installer_url> [-d <results_dir>] [-n <key_name>]"
+    echo "$0 -f <ballerina_performance_distribution> -k <key_file> -p <ballerina_installer> -j <jmeter_distribution> -o <oracle_jdk_distribution>"
+    echo "   [-s <stack_name>] [-t <test_name>] [-d <results_dir>] [-n <key_name>]"
     echo "   [-b <s3_bucket_name>] [-r <s3_bucket_region>]"
     echo "   [-J <jmeter_client_ec2_instance_type>] [-S <jmeter_server_ec2_instance_type>]"
     echo "   [-B <ballerina_ec2_instance_type>] [-N <netty_ec2_instance_type>]"
     echo "   [-w <minimum_stack_creation_wait_time>]"
     echo "   [-h] -- [run_performance_tests_options]"
     echo ""
-    echo "-f: The Ballerina Performance Distribution containing the scripts to run performance tests."
-    echo "-k: The Amazon EC2 Key File."
-    echo "-u: The Ballerina Installer URL."
+    echo "-f: Ballerina Performance Distribution containing the scripts to run performance tests."
+    echo "-k: Amazon EC2 Key File."
+    echo "-p: Ballerina Installer (Debian Package)."
+    echo "-j: Apache JMeter (tgz) distribution."
+    echo "-o: Oracle JDK distribution."
+    echo "-s: The Amazon CloudFormation Stack Name. Default: $default_stack_name"
+    echo "-t: The Test Name. Default: $default_test_name"
     echo "-d: The results directory. Default value is a directory with current time. For example, $default_results_dir."
-    echo "-n: The Amazon EC2 Key Name. Default: $default_key_name."
-    echo "-b: The Amazon S3 Bucket Name. Default: $default_s3_bucket_name."
-    echo "-r: The Amazon S3 Bucket Region. Default: $default_s3_bucket_region."
-    echo "-J: The Amazon EC2 Instance Type for JMeter Client. Default: $default_jmeter_client_ec2_instance_type."
-    echo "-S: The Amazon EC2 Instance Type for JMeter Server. Default: $default_jmeter_server_ec2_instance_type."
-    echo "-B: The Amazon EC2 Instance Type for Ballerina. Default: $default_ballerina_ec2_instance_type."
-    echo "-N: The Amazon EC2 Instance Type for Netty (Backend) Service. Default: $default_netty_ec2_instance_type."
+    echo "-n: Amazon EC2 Key Name. Default: $default_key_name."
+    echo "-b: Amazon S3 Bucket Name. Default: $default_s3_bucket_name."
+    echo "-r: Amazon S3 Bucket Region. Default: $default_s3_bucket_region."
+    echo "-J: Amazon EC2 Instance Type for JMeter Client. Default: $default_jmeter_client_ec2_instance_type."
+    echo "-S: Amazon EC2 Instance Type for JMeter Server. Default: $default_jmeter_server_ec2_instance_type."
+    echo "-B: Amazon EC2 Instance Type for Ballerina. Default: $default_ballerina_ec2_instance_type."
+    echo "-N: Amazon EC2 Instance Type for Netty (Backend) Service. Default: $default_netty_ec2_instance_type."
     echo "-w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status."
     echo "    Default: $default_minimum_stack_creation_wait_time."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "f:k:n:u:d:b:r:J:S:B:N:w:h" opts; do
+while getopts "f:k:n:p:j:o:s:t:d:b:r:J:S:B:N:w:h" opts; do
     case $opts in
     f)
         ballerina_performance_distribution=${OPTARG}
@@ -81,8 +92,20 @@ while getopts "f:k:n:u:d:b:r:J:S:B:N:w:h" opts; do
     n)
         key_name=${OPTARG}
         ;;
-    u)
-        ballerina_installer_url=${OPTARG}
+    p)
+        ballerina_installer=${OPTARG}
+        ;;
+    j)
+        jmeter_distribution=${OPTARG}
+        ;;
+    o)
+        oracle_jdk_distribution=${OPTARG}
+        ;;
+    s)
+        stack_name=${OPTARG}
+        ;;
+    t)
+        test_name=${OPTARG}
         ;;
     d)
         results_dir=${OPTARG}
@@ -144,8 +167,39 @@ if [[ ${key_file: -4} != ".pem" ]]; then
     exit 1
 fi
 
-if [[ -z $ballerina_installer_url ]]; then
-    echo "Please provide the Ballerina Installer URL."
+if [[ ! -f $ballerina_installer ]]; then
+    echo "Please provide the Ballerina Installer."
+    exit 1
+fi
+
+ballerina_installer_filename=$(basename $ballerina_installer)
+
+if [[ ${ballerina_installer_filename: -4} != ".deb" ]]; then
+    echo "Ballerina Installer must have .deb extension"
+    exit 1
+fi
+
+if [[ ! -f $jmeter_distribution ]]; then
+    echo "Please specify the JMeter distribution file (apache-jmeter-*.tgz)"
+    exit 1
+fi
+
+jmeter_distribution_filename=$(basename $jmeter_distribution)
+
+if [[ ${jmeter_distribution_filename: -4} != ".tgz" ]]; then
+    echo "Please provide the JMeter tgz distribution file (apache-jmeter-*.tgz)"
+    exit 1
+fi
+
+if [[ ! -f $oracle_jdk_distribution ]]; then
+    echo "Please specify the Oracle JDK distribution file (jdk-8u*-linux-x64.tar.gz)"
+    exit 1
+fi
+
+oracle_jdk_distribution_filename=$(basename $oracle_jdk_distribution)
+
+if ! [[ $oracle_jdk_distribution_filename =~ ^jdk-8u[0-9]+-linux-x64.tar.gz$ ]]; then
+    echo "Please specify a valid Oracle JDK distribution file (jdk-8u*-linux-x64.tar.gz)"
     exit 1
 fi
 
@@ -166,6 +220,16 @@ fi
 
 if [[ -z $s3_bucket_region ]]; then
     echo "Please provide S3 bucket region."
+    exit 1
+fi
+
+if [[ -z $stack_name ]]; then
+    echo "Please provide the stack name."
+    exit 1
+fi
+
+if [[ -z $test_name ]]; then
+    echo "Please provide the test name."
     exit 1
 fi
 
@@ -255,15 +319,21 @@ temp_dir=$(mktemp -d)
 # Get absolute paths
 key_file=$(realpath $key_file)
 ballerina_performance_distribution=$(realpath $ballerina_performance_distribution)
+ballerina_installer=$(realpath $ballerina_installer)
+jmeter_distribution=$(realpath $jmeter_distribution)
+oracle_jdk_distribution=$(realpath $oracle_jdk_distribution)
 
 ln -s $key_file $temp_dir/$key_filename
 ln -s $ballerina_performance_distribution $temp_dir/$ballerina_performance_distribution_filename
+ln -s $ballerina_installer $temp_dir/$ballerina_installer_filename
+ln -s $jmeter_distribution $temp_dir/$jmeter_distribution_filename
+ln -s $oracle_jdk_distribution $temp_dir/$oracle_jdk_distribution_filename
 
 echo "Syncing files in $temp_dir to S3 Bucket $s3_bucket_name..."
-aws s3 sync $temp_dir s3://$s3_bucket_name
+aws s3 sync --delete $temp_dir s3://$s3_bucket_name
 
-# aws s3 cp $key_file s3://$s3_bucket_name
-# aws s3 cp $ballerina_performance_distribution s3://$s3_bucket_name
+echo "Listing files in S3 Bucket $s3_bucket_name..."
+aws --region $s3_bucket_region s3 ls --summarize s3://$s3_bucket_name
 
 cd $script_dir
 
@@ -271,14 +341,30 @@ echo "Validating stack..."
 # Validate stack first
 aws cloudformation validate-template --template-body file://ballerina_perf_test_cfn.yaml
 
+# Save metadata
+test_parameters_json='.'
+test_parameters_json+=' | .["jmeter_client_ec2_instance_type"]=$jmeter_client_ec2_instance_type'
+test_parameters_json+=' | .["jmeter_server_ec2_instance_type"]=$jmeter_server_ec2_instance_type'
+test_parameters_json+=' | .["ballerina_ec2_instance_type"]=$ballerina_ec2_instance_type'
+test_parameters_json+=' | .["netty_ec2_instance_type"]=$netty_ec2_instance_type'
+jq -n \
+    --arg jmeter_client_ec2_instance_type "$jmeter_client_ec2_instance_type" \
+    --arg jmeter_server_ec2_instance_type "$jmeter_server_ec2_instance_type" \
+    --arg ballerina_ec2_instance_type "$ballerina_ec2_instance_type" \
+    --arg netty_ec2_instance_type "$netty_ec2_instance_type" \
+    "$test_parameters_json" >$results_dir/cf-test-metadata.json
+
 stack_create_start_time=$(date +%s)
-create_stack_command="aws cloudformation create-stack --stack-name ballerina-test-stack \
+create_stack_command="aws cloudformation create-stack --stack-name $stack_name \
     --template-body file://ballerina_perf_test_cfn.yaml --parameters \
+    ParameterKey=TestName,ParameterValue=$test_name \
     ParameterKey=KeyName,ParameterValue=$key_name \
     ParameterKey=BucketName,ParameterValue=$s3_bucket_name \
     ParameterKey=BucketRegion,ParameterValue=$s3_bucket_region \
     ParameterKey=PerformanceBallerinaDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
-    ParameterKey=BallerinaInstallerURL,ParameterValue=$ballerina_installer_url \
+    ParameterKey=BallerinaInstallerName,ParameterValue=$ballerina_installer_filename \
+    ParameterKey=JMeterDistributionName,ParameterValue=$jmeter_distribution_filename \
+    ParameterKey=OracleJDKDistributionName,ParameterValue=$oracle_jdk_distribution_filename \
     ParameterKey=JMeterClientInstanceType,ParameterValue=$jmeter_client_ec2_instance_type \
     ParameterKey=JMeterServerInstanceType,ParameterValue=$jmeter_server_ec2_instance_type \
     ParameterKey=BallerinaInstanceType,ParameterValue=$ballerina_ec2_instance_type \
@@ -288,7 +374,7 @@ create_stack_command="aws cloudformation create-stack --stack-name ballerina-tes
 echo "Creating stack..."
 echo "$create_stack_command"
 # Create stack
-stack_id="$($create_stack_command)"
+# stack_id="$($create_stack_command)"
 
 function exit_handler() {
     # Get stack events
@@ -297,6 +383,19 @@ function exit_handler() {
     aws cloudformation describe-stack-events --stack-name $stack_id --no-paginate --output json >$stack_events_json
     # Check whether there are any failed events
     cat $stack_events_json | jq '.StackEvents | .[] | select ( .ResourceStatus == "CREATE_FAILED" )'
+
+    # Download log events
+    if [[ ! -z "$log_group_name" ]]; then
+        local log_streams_json=$results_dir/log-streams.json
+        aws logs describe-log-streams --log-group-name $log_group_name --output json >$log_streams_json
+        local log_events_file=$results_dir/log-events.log
+        for log_stream in $(cat $log_streams_json | jq -r '.logStreams | .[] | .logStreamName'); do
+            echo "Downloading log events from stream: $log_stream..."
+            echo "#### The beginning of log events from $log_stream" >>$log_events_file
+            aws logs get-log-events --log-group-name $log_group_name --log-stream-name $log_stream --output text >>$log_events_file
+            echo -ne "\n\n#### The end of log events from $log_stream\n\n" >>$log_events_file
+        done
+    fi
 
     local stack_delete_start_time=$(date +%s)
     echo "Deleting the stack: $stack_id"
@@ -330,6 +429,12 @@ echo "Getting JMeter Client Public IP..."
 jmeter_client_ip="$(aws cloudformation describe-stacks --stack-name $stack_id --query 'Stacks[0].Outputs[?OutputKey==`JMeterClientPublicIP`].OutputValue' --output text)"
 
 echo "JMeter Client Public IP: $jmeter_client_ip"
+
+echo "Getting Log Group Name..."
+
+log_group_name="$(aws cloudformation describe-stacks --stack-name $stack_id --query 'Stacks[0].Outputs[?OutputKey==`LogGroupName`].OutputValue' --output text)"
+
+echo "Log Group Name: $log_group_name"
 
 # JMeter servers must be 2 (according to the cloudformation script)
 run_performance_tests_command="./jmeter/run-performance-tests.sh ${run_performance_tests_options[@]} -n 2"
