@@ -374,7 +374,7 @@ create_stack_command="aws cloudformation create-stack --stack-name $stack_name \
 echo "Creating stack..."
 echo "$create_stack_command"
 # Create stack
-# stack_id="$($create_stack_command)"
+stack_id="$($create_stack_command)"
 
 function exit_handler() {
     # Get stack events
@@ -444,6 +444,7 @@ echo "Running performance tests: $run_remote_tests"
 # Handle any error and let the script continue.
 $run_remote_tests || echo "Remote test ssh command failed."
 
+# Download results.zip
 scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results.zip $results_dir
 
 if [[ ! -f $results_dir/results.zip ]]; then
@@ -451,15 +452,19 @@ if [[ ! -f $results_dir/results.zip ]]; then
     exit 500
 fi
 
+# Download results-without-jtls.zip
+scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results-without-jtls.zip $results_dir
+
 echo "Creating summary.csv..."
 cd $results_dir
 unzip -q results.zip
 wget -q http://sourceforge.net/projects/gcviewer/files/gcviewer-1.35.jar/download -O gcviewer.jar
 ./jmeter/create-summary-csv.sh -d results -n Ballerina -p ballerina -j 2 -g gcviewer.jar
 
-echo "Create summary results markdown file"
+echo "Creating summary results markdown file..."
 # Use following to get all column names:
-# while IFS= read -r line; do echo -ne " \"$line\""; done < <(./jmeter/create-summary-csv.sh -n "Ballerina" -j 2 -i -x)
+echo "Available column names: "
+while IFS= read -r line; do echo -ne " \"$line\""; done < <(./jmeter/create-summary-csv.sh -n "Ballerina" -j 2 -i -x)
 
 ./jmeter/create-summary-markdown.py --json-files cf-test-metadata.json results/test-metadata.json --column-names \
     "Scenario Name" "Concurrent Users" "Message Size (Bytes)" "Back-end Service Delay (ms)" "Error %" "Throughput (Requests/sec)" \
