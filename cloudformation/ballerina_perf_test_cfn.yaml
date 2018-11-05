@@ -433,9 +433,9 @@ Resources:
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref LogRoleInstanceProfile
       BlockDeviceMappings:
-        - - DeviceName: "/dev/sda1"
-          - Ebs:
-              VolumeSize: 100
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 100
       Tags:
         - Key: Name
           Value: !Join
