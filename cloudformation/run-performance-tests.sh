@@ -330,7 +330,7 @@ ln -s $jmeter_distribution $temp_dir/$jmeter_distribution_filename
 ln -s $oracle_jdk_distribution $temp_dir/$oracle_jdk_distribution_filename
 
 echo "Syncing files in $temp_dir to S3 Bucket $s3_bucket_name..."
-aws s3 sync --no-progress --delete $temp_dir s3://$s3_bucket_name
+aws s3 sync --quiet --delete $temp_dir s3://$s3_bucket_name
 
 echo "Listing files in S3 Bucket $s3_bucket_name..."
 aws --region $s3_bucket_region s3 ls --summarize s3://$s3_bucket_name
