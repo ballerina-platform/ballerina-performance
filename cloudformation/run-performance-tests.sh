@@ -387,14 +387,15 @@ function exit_handler() {
     # Download log events
     log_group_name="${stack_name}-CloudFormationLogs"
     local log_streams_json=$results_dir/log-streams.json
-    aws logs describe-log-streams --log-group-name $log_group_name --output json >$log_streams_json
-    local log_events_file=$results_dir/log-events.log
-    for log_stream in $(cat $log_streams_json | jq -r '.logStreams | .[] | .logStreamName'); do
-        echo "Downloading log events from stream: $log_stream..."
-        echo "#### The beginning of log events from $log_stream" >>$log_events_file
-        aws logs get-log-events --log-group-name $log_group_name --log-stream-name $log_stream --output text >>$log_events_file
-        echo -ne "\n\n#### The end of log events from $log_stream\n\n" >>$log_events_file
-    done
+    if aws logs describe-log-streams --log-group-name $log_group_name --output json >$log_streams_json; then
+        local log_events_file=$results_dir/log-events.log
+        for log_stream in $(cat $log_streams_json | jq -r '.logStreams | .[] | .logStreamName'); do
+            echo "Downloading log events from stream: $log_stream..."
+            echo "#### The beginning of log events from $log_stream" >>$log_events_file
+            aws logs get-log-events --log-group-name $log_group_name --log-stream-name $log_stream --output text >>$log_events_file
+            echo -ne "\n\n#### The end of log events from $log_stream\n\n" >>$log_events_file
+        done
+    fi
 
     local stack_delete_start_time=$(date +%s)
     echo "Deleting the stack: $stack_id"
