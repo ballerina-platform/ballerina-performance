@@ -169,6 +169,10 @@ Resources:
   CloudFormationLogs:
     Type: 'AWS::Logs::LogGroup'
     Properties:
+      LogGroupName: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - 'CloudFormationLogs'
       RetentionInDays: 7
   ##########################################################################################
   # Create VPC, public subnet and private subnet
@@ -1095,6 +1099,3 @@ Outputs:
   JMeterClientPublicIP:
     Description: JMeter Client Public IP
     Value: !GetAtt JMeterClientInstance.PublicIp
-  LogGroupName:
-    Description: Log Group Name
-    Value: !Ref CloudFormationLogs
