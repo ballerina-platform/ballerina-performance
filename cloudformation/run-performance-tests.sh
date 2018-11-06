@@ -330,7 +330,7 @@ ln -s $jmeter_distribution $temp_dir/$jmeter_distribution_filename
 ln -s $oracle_jdk_distribution $temp_dir/$oracle_jdk_distribution_filename
 
 echo "Syncing files in $temp_dir to S3 Bucket $s3_bucket_name..."
-aws s3 sync --delete $temp_dir s3://$s3_bucket_name
+aws s3 sync --quiet --delete $temp_dir s3://$s3_bucket_name
 
 echo "Listing files in S3 Bucket $s3_bucket_name..."
 aws --region $s3_bucket_region s3 ls --summarize s3://$s3_bucket_name
@@ -385,9 +385,9 @@ function exit_handler() {
     cat $stack_events_json | jq '.StackEvents | .[] | select ( .ResourceStatus == "CREATE_FAILED" )'
 
     # Download log events
-    if [[ ! -z "$log_group_name" ]]; then
-        local log_streams_json=$results_dir/log-streams.json
-        aws logs describe-log-streams --log-group-name $log_group_name --output json >$log_streams_json
+    log_group_name="${stack_name}-CloudFormationLogs"
+    local log_streams_json=$results_dir/log-streams.json
+    if aws logs describe-log-streams --log-group-name $log_group_name --output json >$log_streams_json; then
         local log_events_file=$results_dir/log-events.log
         for log_stream in $(cat $log_streams_json | jq -r '.logStreams | .[] | .logStreamName'); do
             echo "Downloading log events from stream: $log_stream..."
@@ -430,12 +430,6 @@ jmeter_client_ip="$(aws cloudformation describe-stacks --stack-name $stack_id --
 
 echo "JMeter Client Public IP: $jmeter_client_ip"
 
-echo "Getting Log Group Name..."
-
-log_group_name="$(aws cloudformation describe-stacks --stack-name $stack_id --query 'Stacks[0].Outputs[?OutputKey==`LogGroupName`].OutputValue' --output text)"
-
-echo "Log Group Name: $log_group_name"
-
 # JMeter servers must be 2 (according to the cloudformation script)
 run_performance_tests_command="./jmeter/run-performance-tests.sh ${run_performance_tests_options[@]} -n 2"
 # Run performance tests
@@ -444,6 +438,8 @@ echo "Running performance tests: $run_remote_tests"
 # Handle any error and let the script continue.
 $run_remote_tests || echo "Remote test ssh command failed."
 
+# Download results-without-jtls.zip
+scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results-without-jtls.zip $results_dir
 # Download results.zip
 scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results.zip $results_dir
 
@@ -451,9 +447,6 @@ if [[ ! -f $results_dir/results.zip ]]; then
     echo "Failed to download the results.zip"
     exit 500
 fi
-
-# Download results-without-jtls.zip
-scp -i $key_file -o "StrictHostKeyChecking=no" ubuntu@$jmeter_client_ip:results-without-jtls.zip $results_dir
 
 echo "Creating summary.csv..."
 cd $results_dir
