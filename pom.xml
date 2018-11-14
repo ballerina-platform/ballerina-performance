@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.ballerina</groupId>
     <artifactId>ballerina-performance</artifactId>
-    <version>0.983.0</version>
+    <version>0.983.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Ballerina - Artifacts for Ballerina Performance Tests</name>
     <inceptionYear>2018</inceptionYear>
@@ -36,7 +36,7 @@
         <developerConnection>scm:git:https://github.com/ballerina-platform/ballerina-performance.git
         </developerConnection>
         <connection>scm:git:https://github.com/ballerina-platform/ballerina-performance.git</connection>
-        <tag>v0.983.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
@@ -143,7 +143,7 @@
     <properties>
         <project.scm.id>ballerina-scm-server</project.scm.id>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ballerina.performance.version>0.983.0</ballerina.performance.version>
+        <ballerina.performance.version>0.983.1-SNAPSHOT</ballerina.performance.version>
         <performance.common.version>0.2.0</performance.common.version>
     </properties>
 </project>
