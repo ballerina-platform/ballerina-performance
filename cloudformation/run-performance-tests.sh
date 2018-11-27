@@ -309,6 +309,9 @@ echo "Results will be downloaded to $results_dir"
 echo "Extracting Ballerina Performance Distribution to $results_dir"
 tar -xf $ballerina_performance_distribution -C $results_dir
 
+echo "Checking whether python requirements are installed..."
+pip install -r $results_dir/jmeter/python-requirements.txt
+
 estimate_command="$results_dir/jmeter/run-performance-tests.sh -t ${run_performance_tests_options[@]}"
 echo "Estimating time for performance tests: $estimate_command"
 # Estimating this script will also validate the options. It's important to validate options before creating the stack.
