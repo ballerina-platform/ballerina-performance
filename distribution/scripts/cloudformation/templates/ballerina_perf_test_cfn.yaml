@@ -31,7 +31,7 @@
 {%- endblock %}
 {% block ec2instances -%}
 # JMeter Client
-{% call ec2instance('JMeterClientInstance', 'jmeter-client', instance_type_ref = 'JMeterClientInstanceType',
+{% call ec2instance('JMeterClientInstance', 'jmeter-client', '!Ref JMeterClientInstanceType',
   files=[{'name': 'apache-jmeter.tgz', 'ref': 'JMeterDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}],
   public=True, volume_size=100) -%}
 /home/ubuntu/setup/setup-jmeter-client-ballerina.sh -g -k /home/ubuntu/private_key.pem \
@@ -47,18 +47,18 @@
 {%- endcall %}
 # JMeter Servers
 {%- for i in range(1, jmeter_servers+1) -%}
-{% call ec2instance('JMeterServer' + i|string + 'Instance', 'jmeter-server-' + i|string, instance_type_ref = 'JMeterServerInstanceType',
+{% call ec2instance('JMeterServer' + i|string + 'Instance', 'jmeter-server-' + i|string, '!Ref JMeterServerInstanceType',
   files = [{'name': 'apache-jmeter.tgz', 'ref': 'JMeterDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}]) -%}
 /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu -d /home/ubuntu/jdk-8-linux-x64.tar.gz -f /home/ubuntu/apache-jmeter.tgz
 {%- endcall %}
 {% endfor -%}
 # Ballerina
-{% call ec2instance('BallerinaInstance', 'ballerina', instance_type_ref = 'BallerinaInstanceType',
+{% call ec2instance('BallerinaInstance', 'ballerina', '!Ref BallerinaInstanceType',
   files=[{'name': 'ballerina_installer.deb', 'ref': 'BallerinaInstallerName'}]) -%}
 /home/ubuntu/setup/setup-ballerina.sh -g -d /home/ubuntu/ballerina_installer.deb -n ${BackendInstance.PrivateIp}
 {%- endcall %}
 # Backend
-{% call ec2instance('BackendInstance', 'backend', instance_type_ref = 'BackendInstanceType',
+{% call ec2instance('BackendInstance', 'backend', '!Ref BackendInstanceType',
   files=[{'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}]) -%}
 /home/ubuntu/setup/setup-netty.sh -g -d /home/ubuntu/jdk-8-linux-x64.tar.gz
 {%- endcall %}
