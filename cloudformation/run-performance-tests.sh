@@ -340,6 +340,9 @@ aws --region $s3_bucket_region s3 ls --summarize s3://$s3_bucket_name
 
 cd $script_dir
 
+echo "Creating AWS Cloudformation template..."
+$results_dir/cloudformation/create-template.py --template-name ballerina_perf_test_cfn.yaml --jmeter-servers 2 --output-name ballerina_perf_test_cfn.yaml
+
 echo "Validating stack..."
 # Validate stack first
 aws cloudformation validate-template --template-body file://ballerina_perf_test_cfn.yaml
@@ -364,7 +367,7 @@ create_stack_command="aws cloudformation create-stack --stack-name $stack_name \
     ParameterKey=KeyName,ParameterValue=$key_name \
     ParameterKey=BucketName,ParameterValue=$s3_bucket_name \
     ParameterKey=BucketRegion,ParameterValue=$s3_bucket_region \
-    ParameterKey=PerformanceBallerinaDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
+    ParameterKey=PerformanceDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
     ParameterKey=BallerinaInstallerName,ParameterValue=$ballerina_installer_filename \
     ParameterKey=JMeterDistributionName,ParameterValue=$jmeter_distribution_filename \
     ParameterKey=OracleJDKDistributionName,ParameterValue=$oracle_jdk_distribution_filename \
