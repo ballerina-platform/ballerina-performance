@@ -309,6 +309,9 @@ echo "Results will be downloaded to $results_dir"
 echo "Extracting Ballerina Performance Distribution to $results_dir"
 tar -xf $ballerina_performance_distribution -C $results_dir
 
+echo "Checking whether python requirements are installed..."
+pip install -r $results_dir/jmeter/python-requirements.txt
+
 estimate_command="$results_dir/jmeter/run-performance-tests.sh -t ${run_performance_tests_options[@]}"
 echo "Estimating time for performance tests: $estimate_command"
 # Estimating this script will also validate the options. It's important to validate options before creating the stack.
@@ -337,6 +340,9 @@ aws --region $s3_bucket_region s3 ls --summarize s3://$s3_bucket_name
 
 cd $script_dir
 
+echo "Creating AWS Cloudformation template..."
+$results_dir/cloudformation/create-template.py --template-name ballerina_perf_test_cfn.yaml --jmeter-servers 2 --output-name ballerina_perf_test_cfn.yaml
+
 echo "Validating stack..."
 # Validate stack first
 aws cloudformation validate-template --template-body file://ballerina_perf_test_cfn.yaml
@@ -361,7 +367,7 @@ create_stack_command="aws cloudformation create-stack --stack-name $stack_name \
     ParameterKey=KeyName,ParameterValue=$key_name \
     ParameterKey=BucketName,ParameterValue=$s3_bucket_name \
     ParameterKey=BucketRegion,ParameterValue=$s3_bucket_region \
-    ParameterKey=PerformanceBallerinaDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
+    ParameterKey=PerformanceDistributionName,ParameterValue=$ballerina_performance_distribution_filename \
     ParameterKey=BallerinaInstallerName,ParameterValue=$ballerina_installer_filename \
     ParameterKey=JMeterDistributionName,ParameterValue=$jmeter_distribution_filename \
     ParameterKey=OracleJDKDistributionName,ParameterValue=$oracle_jdk_distribution_filename \

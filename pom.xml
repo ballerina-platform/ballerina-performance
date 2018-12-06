@@ -144,6 +144,6 @@
         <project.scm.id>ballerina-scm-server</project.scm.id>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ballerina.performance.version>0.983.1-SNAPSHOT</ballerina.performance.version>
-        <performance.common.version>0.2.0</performance.common.version>
+        <performance.common.version>0.2.1-SNAPSHOT</performance.common.version>
     </properties>
 </project>

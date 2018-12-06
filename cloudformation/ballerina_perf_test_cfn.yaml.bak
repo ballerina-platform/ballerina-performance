@@ -32,13 +32,13 @@ Description: >-
 Mappings:
   AWSRegion2AMI:
     us-east-1:
-      AMI: ami-0977029b5b13f3d08
+      AMI: ami-0d2505740b82f7948
     us-east-2:
-      AMI: ami-05f39e7b7f153bc6a
+      AMI: ami-0cf8cc36b8c81c6de
     us-west-1:
-      AMI: ami-03d5270fcb641f79b
+      AMI: ami-09c5eca75eed8245a
     us-west-2:
-      AMI: ami-0f47ef92b4218ec09
+      AMI: ami-0f05ad41860678734
 #############################
 # User inputs
 #############################
