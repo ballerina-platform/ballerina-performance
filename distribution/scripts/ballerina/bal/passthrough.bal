@@ -1,12 +1,12 @@
 import ballerina/http;
 
-service passthroughService on new http:Listener(9090) {
+service passthrough on new http:Listener(9090) {
 
     @http:ResourceConfig {
         methods:["POST"],
         path:"/"
     }
-    resource function passthrough (http:Caller caller, http:Request clientRequest) {
+    resource function passthrough(http:Caller caller, http:Request clientRequest) {
         http:Client nettyEP = new("http://netty:8688");
         var response = nettyEP -> forward("/service/EchoService", clientRequest);
 

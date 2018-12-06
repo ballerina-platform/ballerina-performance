@@ -31,5 +31,5 @@ service passthroughService on helloWorldEP {
 
         }
     }
-}b
+}
 
