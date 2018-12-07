@@ -1,6 +1,6 @@
 import ballerina/http;
 
-http:ServiceEndpointConfiguration helloWorldEPConfig = {
+http:ServiceEndpointConfiguration serviceConfig = {
     httpVersion: "2.0",
     secureSocket: {
         keyStore: {
@@ -10,12 +10,10 @@ http:ServiceEndpointConfiguration helloWorldEPConfig = {
     }
 };
 
-listener http:Listener helloWorldEP = new(9095, config = helloWorldEPConfig);
-
-service passthroughService on helloWorldEP {
+@http:ServiceConfig {basePath:"/passthrough"}
+service passthroughService on new http:Listener(9090, config = serviceConfig) {
     @http:ResourceConfig {
-        methods:["POST"],
-        path:"/passthrough"
+        methods:["POST"]
     }
     resource function passthrough (http:Caller caller, http:Request clientRequest) {
         http:Client nettyEP = new("http://netty:8688");
