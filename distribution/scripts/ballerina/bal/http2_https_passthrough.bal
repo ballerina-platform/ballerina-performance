@@ -13,7 +13,8 @@ http:ServiceEndpointConfiguration serviceConfig = {
 @http:ServiceConfig {basePath:"/passthrough"}
 service passthroughService on new http:Listener(9090, config = serviceConfig) {
     @http:ResourceConfig {
-        methods:["POST"]
+        methods:["POST"],
+        path:"/"
     }
     resource function passthrough (http:Caller caller, http:Request clientRequest) {
         http:Client nettyEP = new("http://netty:8688");
