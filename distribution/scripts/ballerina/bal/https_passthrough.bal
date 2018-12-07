@@ -10,7 +10,7 @@ http:ServiceEndpointConfiguration serviceConfig = {
 };
 
 @http:ServiceConfig {basePath:"/passthrough"}
-service passthroughService on new http:Listener(9095, config = serviceConfig) {
+service passthroughService on new http:Listener(9090, config = serviceConfig) {
     @http:ResourceConfig {
         methods:["POST"]
     }
