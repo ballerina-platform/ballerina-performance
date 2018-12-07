@@ -1,6 +1,7 @@
 import ballerina/http;
 
-service passthrough on new http:Listener(9090) {
+@http:ServiceConfig {basePath:"/passthrough"}
+service passthroughService on new http:Listener(9090) {
 
     @http:ResourceConfig {
         methods:["POST"],
