@@ -14,7 +14,7 @@ service passthroughService on new http:Listener(9090) {
 
         if (response is http:Response) {
                 var result = caller -> respond(response);
-        } else if (response is error) {
+        } else {
                 http:Response res = new;
                 res.statusCode = 500;
                 res.setPayload(<string> response.detail().message);
