@@ -9,16 +9,15 @@ http:ServiceEndpointConfiguration serviceConfig = {
     }
 };
 
+http:Client nettyEP = new("http://netty:8688");
+
 @http:ServiceConfig {basePath:"/transform"}
 service transformationService on new http:Listener(9090, config = serviceConfig) {
-
     @http:ResourceConfig {
         methods:["POST"],
         path:"/"
     }
     resource function transform(http:Caller caller, http:Request req) {
-        http:Client nettyEP = new("http://netty:8688");
-       
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {

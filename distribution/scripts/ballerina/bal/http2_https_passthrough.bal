@@ -10,10 +10,10 @@ http:ServiceEndpointConfiguration serviceConfig = {
     }
 };
 
+http:Client nettyEP = new("http://netty:8688");
+
 @http:ServiceConfig {basePath:"/passthrough"}
 service passthroughService on new http:Listener(9090, config = serviceConfig) {
-
-    http:Client nettyEP = new("http://netty:8688");
 
     @http:ResourceConfig {
         methods:["POST"],
@@ -21,7 +21,7 @@ service passthroughService on new http:Listener(9090, config = serviceConfig) {
     }
     resource function passthrough (http:Caller caller, http:Request clientRequest) {
         
-        var response = self.nettyEP -> forward("/service/EchoService", clientRequest);
+        var response = nettyEP -> forward("/service/EchoService", clientRequest);
 
 
         if (response is http:Response) {
@@ -35,4 +35,3 @@ service passthroughService on new http:Listener(9090, config = serviceConfig) {
         }
     }
 }
-
