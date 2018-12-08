@@ -3,13 +3,13 @@ import ballerina/http;
 @http:ServiceConfig {basePath:"/transform"}
 service transformationService on new http:Listener(9090) {
 
+    http:Client nettyEP = new("http://netty:8688");
+
     @http:ResourceConfig {
         methods:["POST"],
         path:"/"
     }
     resource function transform(http:Caller caller, http:Request req) {
-        http:Client nettyEP = new("http://netty:8688");
-       
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
