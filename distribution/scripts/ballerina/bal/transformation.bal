@@ -1,10 +1,10 @@
 import ballerina/http;
 
+http:Client nettyEP = new("http://netty:8688");
+
+
 @http:ServiceConfig {basePath:"/transform"}
 service transformationService on new http:Listener(9090) {
-
-    http:Client nettyEP = new("http://netty:8688");
-
     @http:ResourceConfig {
         methods:["POST"],
         path:"/"
