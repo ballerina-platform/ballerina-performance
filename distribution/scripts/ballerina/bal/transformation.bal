@@ -1,37 +1,46 @@
 import ballerina/http;
 
-endpoint http:Listener transformationEP {
-    port:9090
-};
-
-endpoint http:Client nettyEP {
-    url:"http://netty:8688"
-};
-
 @http:ServiceConfig {basePath:"/transform"}
-service<http:Service> transformationService bind transformationEP {
+service transformationService on new http:Listener(9090) {
+
+    http:Client nettyEP = new("http://netty:8688");
 
     @http:ResourceConfig {
         methods:["POST"],
         path:"/"
     }
-    transform (endpoint outboundEP, http:Request req) {
-	json payload = req.getJsonPayload() but {error => {}};
-        xml xmlPayload = check payload.toXML({});
-	http:Request clinetreq = new;
-        clinetreq.setXmlPayload(untaint xmlPayload);
+    resource function transform(http:Caller caller, http:Request req) {
+        json|error payload = req.getJsonPayload();
 
-        var response = nettyEP -> post("/service/EchoService", clinetreq);
-        match response {
-            http:Response httpResponse => {
-                _ = outboundEP -> respond(httpResponse);
+        if (payload is json) {
+             xml|error xmlPayload = payload.toXML({});
+
+             if (xmlPayload is xml) {
+                http:Request clinetreq = new;
+                clinetreq.setXmlPayload(untaint xmlPayload);
+
+                var response = nettyEP -> post("/service/EchoService", clinetreq);
+
+                if (response is http:Response) {
+                        var result = caller -> respond(response);
+                } else {
+                        http:Response res = new;
+                        res.statusCode = 500;
+                        res.setPayload(<string> response.detail().message);
+                        var result = caller->respond(res);
+                }
+            } else {
+                http:Response res = new;
+                res.statusCode = 400;
+                res.setPayload(untaint <string> xmlPayload.detail().message);
+                var result = caller->respond(res);
             }
-            http:error err => {
-                http:Response errorResponse = new;
-                json errMsg = {"error":"error occurred while invoking the service"};
-                errorResponse.setJsonPayload(errMsg);
-                _ = outboundEP -> respond(errorResponse);
-            }
+
+        } else {
+            http:Response res = new;
+            res.statusCode = 400;
+            res.setPayload(untaint <string> payload.detail().message);
+            var result = caller->respond(res);
         }
     }
 }
