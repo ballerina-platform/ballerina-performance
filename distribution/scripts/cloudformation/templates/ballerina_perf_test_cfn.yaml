@@ -39,12 +39,15 @@
   -d /home/ubuntu/jdk-8-linux-x64.tar.gz \
   -f /home/ubuntu/apache-jmeter.tgz \
   -c /home/ubuntu \
+  {%- if jmeter_servers >= 2 %}
   {%- for i in range(1, jmeter_servers+1) %}
   -a jmeter{{ i }} -n ${JMeterServer{{ i }}Instance.PrivateIp} \
   {%- endfor %}
+  {%- endif %}
   -a ballerina -n ${BallerinaInstance.PrivateIp} \
   -a netty -n ${BackendInstance.PrivateIp}
 {%- endcall %}
+{%- if jmeter_servers >= 2 %}
 # JMeter Servers
 {%- for i in range(1, jmeter_servers+1) -%}
 {% call ec2instance('JMeterServer' + i|string + 'Instance', 'jmeter-server-' + i|string, '!Ref JMeterServerInstanceType',
@@ -52,6 +55,7 @@
 /home/ubuntu/setup/setup-jmeter-ballerina.sh -g -i /home/ubuntu -d /home/ubuntu/jdk-8-linux-x64.tar.gz -f /home/ubuntu/apache-jmeter.tgz
 {%- endcall %}
 {% endfor -%}
+{%- endif %}
 # Ballerina
 {% call ec2instance('BallerinaInstance', 'ballerina', '!Ref BallerinaInstanceType',
   files=[{'name': 'ballerina_installer.deb', 'ref': 'BallerinaInstallerName'}]) -%}

@@ -31,6 +31,14 @@
     <inceptionYear>2018</inceptionYear>
     <url>https://ballerina.io</url>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <scm>
         <url>https://github.com/ballerina-platform/ballerina-performance.git</url>
         <developerConnection>scm:git:https://github.com/ballerina-platform/ballerina-performance.git
@@ -76,7 +84,6 @@
 
     <modules>
         <module>distribution</module>
-        <module>cloudformation</module>
     </modules>
 
     <dependencyManagement>
