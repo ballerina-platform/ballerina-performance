@@ -25,6 +25,10 @@ export script_dir=$(dirname "$0")
 export ballerina_installer=""
 export ballerina_ec2_instance_type=""
 
+export aws_cloudformation_template_filename="ballerina_perf_test_cfn.yaml"
+export application_name="Ballerina"
+export metrics_file_prefix="ballerina"
+
 function usageCommand() {
     echo "-p <ballerina_installer> -B <ballerina_ec2_instance_type>"
 }
@@ -73,6 +77,7 @@ function validate() {
 export -f validate
 
 function create_links() {
+    ballerina_installer=$(realpath $ballerina_installer)
     ln -s $ballerina_installer $temp_dir/$ballerina_installer_filename
 }
 export -f create_links
@@ -102,9 +107,5 @@ function get_columns() {
     echo "Average Ballerina Memory Footprint After Full GC (M)"
 }
 export -f get_columns
-
-export aws_cloudformation_template_filename="ballerina_perf_test_cfn.yaml"
-export application_name="Ballerina"
-export metrics_file_prefix="ballerina"
 
 $script_dir/cloudformation-common.sh "${opts[@]}" -- "$@"
