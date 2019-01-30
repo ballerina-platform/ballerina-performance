@@ -9,7 +9,17 @@ http:ServiceEndpointConfiguration serviceConfig = {
     }
 };
 
-http:Client nettyEP = new("http://netty:8688");
+http:ClientEndpointConfig sslClientConf = {
+    secureSocket:{
+        trustStore:{
+            path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
+            password: "ballerina"
+        },
+        verifyHostname: false
+    }
+};
+
+http:Client nettyEP = new("https://netty:8688", config = sslClientConf);
 
 @http:ServiceConfig {basePath:"/passthrough"}
 service passthroughService on new http:Listener(9090, config = serviceConfig) {
@@ -17,12 +27,10 @@ service passthroughService on new http:Listener(9090, config = serviceConfig) {
         methods:["POST"],
         path:"/"
     }
-    resource function passthrough (http:Caller caller, http:Request clientRequest) {
-        var response = nettyEP -> forward("/service/EchoService", clientRequest);
-
-
+    resource function passthrough(http:Caller caller, http:Request clientRequest) {
+        var response = nettyEP->forward("/service/EchoService", clientRequest);
         if (response is http:Response) {
-                var result = caller -> respond(response);
+                var result = caller->respond(response);
         } else {
                 http:Response res = new;
                 res.statusCode = 500;
