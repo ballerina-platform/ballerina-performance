@@ -26,6 +26,14 @@ script_dir=$(dirname "$0")
 function initialize() {
     export ballerina_ssh_host=ballerina
     export ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
+    echo "Downloading keystore file to $HOME."
+    scp $ballerina_ssh_host:/usr/lib/ballerina/ballerina-*/bre/security/ballerinaKeystore.p12 $HOME/
+    if [[ $jmeter_servers -gt 1 ]]; then
+        for jmeter_ssh_host in ${jmeter_ssh_hosts[@]}; do
+            echo "Copying keystore to $jmeter_ssh_host"
+            scp $HOME/ballerinaKeystore.p12 $jmeter_ssh_host:
+        done
+    fi
 }
 export -f initialize
 
@@ -51,6 +59,7 @@ declare -A test_scenario1=(
     [jmx]="http-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
+    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
 declare -A test_scenario2=(
