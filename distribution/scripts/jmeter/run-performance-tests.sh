@@ -28,12 +28,7 @@ function initialize() {
     export ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
     echo "Downloading keystore file to $HOME."
     scp $ballerina_ssh_host:/usr/lib/ballerina/ballerina-*/bre/security/ballerinaKeystore.p12 $HOME/
-    if [[ $jmeter_servers -gt 1 ]]; then
-        for jmeter_ssh_host in ${jmeter_ssh_hosts[@]}; do
-            echo "Copying keystore to $jmeter_ssh_host"
-            scp $HOME/ballerinaKeystore.p12 $jmeter_ssh_host:
-        done
-    fi
+    scp $HOME/ballerinaKeystore.p12 $backend_ssh_host:
 }
 export -f initialize
 
