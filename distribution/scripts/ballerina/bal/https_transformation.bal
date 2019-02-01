@@ -9,7 +9,17 @@ http:ServiceEndpointConfiguration serviceConfig = {
     }
 };
 
-http:Client nettyEP = new("http://netty:8688");
+http:ClientEndpointConfig sslClientConf = {
+    secureSocket:{
+        trustStore:{
+            path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
+            password: "ballerina"
+        },
+        verifyHostname: false
+    }
+};
+
+http:Client nettyEP = new("https://netty:8688", config = sslClientConf);
 
 @http:ServiceConfig {basePath:"/transform"}
 service transformationService on new http:Listener(9090, config = serviceConfig) {
@@ -27,15 +37,15 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
                 http:Request clinetreq = new;
                 clinetreq.setXmlPayload(untaint xmlPayload);
 
-                var response = nettyEP -> post("/service/EchoService", clinetreq);
+                var response = nettyEP->post("/service/EchoService", clinetreq);
 
                 if (response is http:Response) {
-                        var result = caller -> respond(response);
+                    var result = caller->respond(response);
                 } else {
-                        http:Response res = new;
-                        res.statusCode = 500;
-                        res.setPayload(<string> response.detail().message);
-                        var result = caller->respond(res);
+                    http:Response res = new;
+                    res.statusCode = 500;
+                    res.setPayload(<string> response.detail().message);
+                    var result = caller->respond(res);
                 }
             } else {
                 http:Response res = new;
