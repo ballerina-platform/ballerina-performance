@@ -10,8 +10,8 @@ http:ServiceEndpointConfiguration serviceConfig = {
 };
 
 http:ClientEndpointConfig sslClientConf = {
-    secureSocket:{
-        trustStore:{
+    secureSocket: {
+        trustStore: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
             password: "ballerina"
         },
@@ -21,19 +21,20 @@ http:ClientEndpointConfig sslClientConf = {
 
 http:Client nettyEP = new("https://netty:8688", config = sslClientConf);
 
-@http:ServiceConfig {basePath:"/transform"}
+@http:ServiceConfig { basePath: "/transform" }
 service transformationService on new http:Listener(9090, config = serviceConfig) {
+
     @http:ResourceConfig {
-        methods:["POST"],
-        path:"/"
+        methods: ["POST"],
+        path: "/"
     }
     resource function transform(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
-             xml|error xmlPayload = payload.toXML({});
+            xml|error xmlPayload = payload.toXML({});
 
-             if (xmlPayload is xml) {
+            if (xmlPayload is xml) {
                 http:Request clinetreq = new;
                 clinetreq.setXmlPayload(untaint xmlPayload);
 
@@ -44,20 +45,20 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
                 } else {
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(<string> response.detail().message);
+                    res.setPayload(<string>response.detail().message);
                     var result = caller->respond(res);
                 }
             } else {
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(untaint <string> xmlPayload.detail().message);
+                res.setPayload(untaint <string>xmlPayload.detail().message);
                 var result = caller->respond(res);
             }
 
         } else {
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(untaint <string> payload.detail().message);
+            res.setPayload(untaint <string>payload.detail().message);
             var result = caller->respond(res);
         }
     }
