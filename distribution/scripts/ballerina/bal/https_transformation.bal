@@ -1,4 +1,5 @@
 import ballerina/http;
+import ballerina/log;
 
 http:ServiceEndpointConfiguration serviceConfig = {
     secureSocket: {
@@ -43,12 +44,14 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
                 if (response is http:Response) {
                     var result = caller->respond(response);
                 } else {
+                    log:printError("Error at https_transformation", err = response);
                     http:Response res = new;
                     res.statusCode = 500;
                     res.setPayload(<string>response.detail().message);
                     var result = caller->respond(res);
                 }
             } else {
+                log:printError("Error at https_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
                 res.setPayload(untaint <string>xmlPayload.detail().message);
@@ -56,6 +59,7 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
             }
 
         } else {
+            log:printError("Error at https_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
             res.setPayload(untaint <string>payload.detail().message);

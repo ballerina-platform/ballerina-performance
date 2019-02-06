@@ -1,4 +1,5 @@
 import ballerina/http;
+import ballerina/log;
 
 http:ServiceEndpointConfiguration serviceConfig = {
     secureSocket: {
@@ -33,6 +34,7 @@ service passthroughService on new http:Listener(9090, config = serviceConfig) {
         if (response is http:Response) {
             var result = caller->respond(response);
         } else {
+            log:printError("Error at https_passthrough", err = response);
             http:Response res = new;
             res.statusCode = 500;
             res.setPayload(<string>response.detail().message);
