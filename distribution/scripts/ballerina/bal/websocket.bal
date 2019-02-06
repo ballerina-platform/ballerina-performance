@@ -23,9 +23,9 @@ service basic on new http:WebSocketListener(9090) {
 
     // This `resource` is triggered when a new text frame is received from a client.
     resource function onText(http:WebSocketCaller caller, string text,
-                                boolean finalFrame) {
+                             boolean finalFrame) {
         io:println("\ntext message: " + text + " & final fragment: "
-                                                        + finalFrame);
+                + finalFrame);
 
         if (text == "ping") {
             io:println("Pinging...");
@@ -35,8 +35,8 @@ service basic on new http:WebSocketListener(9090) {
             }
         } else if (text == "closeMe") {
             _ = caller->close(statusCode = 1001,
-                            reason = "You asked me to close the connection",
-                            timeoutInSecs = 0);
+                reason = "You asked me to close the connection",
+                timeoutInSecs = 0);
         } else {
             var err = caller->pushText(text);
             if (err is error) {
@@ -62,7 +62,7 @@ service basic on new http:WebSocketListener(9090) {
         var err = caller->pong(data);
         if (err is error) {
             log:printError("Error occurred when closing the connection",
-                            err = err);
+                err = err);
         }
     }
 
@@ -77,10 +77,10 @@ service basic on new http:WebSocketListener(9090) {
         io:println("\nReached idle timeout");
         io:println("Closing connection " + caller.id);
         var err = caller->close(statusCode = 1001, reason =
-                                    "Connection timeout");
+            "Connection timeout");
         if (err is error) {
             log:printError("Error occured when closing the connection",
-                                err = err);
+                err = err);
         }
     }
 
@@ -93,7 +93,7 @@ service basic on new http:WebSocketListener(9090) {
 
     // This resource is triggered when a client connection is closed from the client side.
     resource function onClose(http:WebSocketCaller caller, int statusCode,
-                                string reason) {
+                              string reason) {
         io:println(string `Client left with {{statusCode}} because
                     {{reason}}`);
     }
