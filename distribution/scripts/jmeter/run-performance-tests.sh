@@ -105,6 +105,7 @@ declare -A test_scenario5=(
     [jmx]="http2-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
+    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
 declare -A test_scenario6=(
