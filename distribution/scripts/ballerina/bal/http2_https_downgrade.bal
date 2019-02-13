@@ -12,7 +12,6 @@ http:ServiceEndpointConfiguration serviceConfig = {
 };
 
 http:ClientEndpointConfig sslClientConf = {
-    httpVersion: "2.0",
     secureSocket: {
         trustStore: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",

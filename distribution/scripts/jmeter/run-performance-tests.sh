@@ -86,7 +86,20 @@ declare -A test_scenario4=(
     [name]="passthrough_http2_https"
     [display_name]="Passthrough HTTP2 (HTTPS) service"
     [bal]="http2_https_passthrough.balx"
-    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a back-end service."
+    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a HTTP2 (HTTPS) back-end service."
+    [bal_flags]=""
+    [path]="/passthrough"
+    [jmx]="http2-post-request.jmx"
+    [protocol]="https"
+    [use_backend]=true
+    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina --http-version 2.0"
+    [skip]=false
+)
+declare -A test_scenario5=(
+    [name]="passthrough_http2_https_downgrade"
+    [display_name]="Passthrough HTTP2 (HTTPS) downgrade service"
+    [bal]="http2_https_downgrade.balx"
+    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a HTTPS back-end service."
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http2-post-request.jmx"
@@ -94,7 +107,7 @@ declare -A test_scenario4=(
     [use_backend]=true
     [skip]=false
 )
-declare -A test_scenario5=(
+declare -A test_scenario6=(
     [name]="websocket"
     [display_name]="Websocket"
     [description]="Websocket service"
@@ -106,7 +119,7 @@ declare -A test_scenario5=(
     [use_backend]=false
     [skip]=false
 )
-declare -A test_scenario10=(
+declare -A test_scenario7=(
     [name]="passthrough_http_observe_default"
     [display_name]="Passthrough HTTP Service with Default Observability"
     [description]="Observability with default configs"
@@ -118,7 +131,7 @@ declare -A test_scenario10=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario11=(
+declare -A test_scenario8=(
     [name]="passthrough_http_observe_metrics"
     [display_name]="Passthrough HTTP Service with Metrics"
     [description]="Metrics only"
@@ -130,7 +143,7 @@ declare -A test_scenario11=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario12=(
+declare -A test_scenario9=(
     [name]="passthrough_http_observe_tracing"
     [display_name]="Passthrough HTTP Service with Tracing"
     [description]="Tracing only"
@@ -142,7 +155,7 @@ declare -A test_scenario12=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario13=(
+declare -A test_scenario10=(
     [name]="passthrough_http_observe_metrics_noop"
     [display_name]="Passthrough HTTP Service with Metrics (No-Op)"
     [description]="Metrics (with No-Op implementation) only"
@@ -154,7 +167,7 @@ declare -A test_scenario13=(
     [use_backend]=true
     [skip]=true
 )
-# declare -A test_scenario14=(
+# declare -A test_scenario11=(
 #     [name]="passthrough_http_observe_tracing_noop"
 #     [display_name]="Passthrough HTTP Service with Tracing (No-Op)"
 #     [description]="Tracing (with No-Op implementation) only"
