@@ -109,6 +109,18 @@ declare -A test_scenario5=(
     [skip]=false
 )
 declare -A test_scenario6=(
+    [name]="passthrough_http2_http_downgrade"
+    [display_name]="Passthrough HTTP2 downgrade service"
+    [bal]="http2_http_downgrade.balx"
+    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a HTTP back-end service."
+    [bal_flags]=""
+    [path]="/passthrough"
+    [jmx]="http2-post-request.jmx"
+    [protocol]="https"
+    [use_backend]=true
+    [skip]=false
+)
+declare -A test_scenario7=(
     [name]="websocket"
     [display_name]="Websocket"
     [description]="Websocket service"
@@ -120,7 +132,7 @@ declare -A test_scenario6=(
     [use_backend]=false
     [skip]=false
 )
-declare -A test_scenario7=(
+declare -A test_scenario8=(
     [name]="passthrough_http_observe_default"
     [display_name]="Passthrough HTTP Service with Default Observability"
     [description]="Observability with default configs"
@@ -132,7 +144,7 @@ declare -A test_scenario7=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario8=(
+declare -A test_scenario9=(
     [name]="passthrough_http_observe_metrics"
     [display_name]="Passthrough HTTP Service with Metrics"
     [description]="Metrics only"
@@ -144,7 +156,7 @@ declare -A test_scenario8=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario9=(
+declare -A test_scenario10=(
     [name]="passthrough_http_observe_tracing"
     [display_name]="Passthrough HTTP Service with Tracing"
     [description]="Tracing only"
@@ -156,7 +168,7 @@ declare -A test_scenario9=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario10=(
+declare -A test_scenario11=(
     [name]="passthrough_http_observe_metrics_noop"
     [display_name]="Passthrough HTTP Service with Metrics (No-Op)"
     [description]="Metrics (with No-Op implementation) only"
@@ -168,7 +180,7 @@ declare -A test_scenario10=(
     [use_backend]=true
     [skip]=true
 )
-# declare -A test_scenario11=(
+# declare -A test_scenario12=(
 #     [name]="passthrough_http_observe_tracing_noop"
 #     [display_name]="Passthrough HTTP Service with Tracing (No-Op)"
 #     [description]="Tracing (with No-Op implementation) only"
