@@ -33,10 +33,10 @@ function initialize() {
 export -f initialize
 
 declare -A test_scenario0=(
-    [name]="passthrough_http"
-    [display_name]="Passthrough HTTP service"
+    [name]="h1c_h1c_passthrough"
+    [display_name]="Passthrough HTTP service (h1c -> h1c)"
     [description]="An HTTP Service, which forwards all requests to a back-end service."
-    [bal]="passthrough.balx"
+    [bal]="h1c_h1c_passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
@@ -45,10 +45,10 @@ declare -A test_scenario0=(
     [skip]=false
 )
 declare -A test_scenario1=(
-    [name]="passthrough_https"
-    [display_name]="Passthrough HTTPS service"
+    [name]="h1_h1_passthrough"
+    [display_name]="Passthrough HTTPS service (h1 -> h1)"
     [description]="An HTTPS Service, which forwards all requests to an HTTPS back-end service."
-    [bal]="https_passthrough.balx"
+    [bal]="h1_h1_passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
@@ -58,10 +58,10 @@ declare -A test_scenario1=(
     [skip]=false
 )
 declare -A test_scenario2=(
-    [name]="transformation_http"
+    [name]="http_transformation"
     [display_name]="JSON to XML transformation HTTP service"
     [description]="An HTTP Service, which transforms JSON requests to XML and then forwards all requests to a back-end service."
-    [bal]="transformation.balx"
+    [bal]="http_transformation.balx"
     [bal_flags]=""
     [path]="/transform"
     [jmx]="http-post-request.jmx"
@@ -70,7 +70,7 @@ declare -A test_scenario2=(
     [skip]=false
 )
 declare -A test_scenario3=(
-    [name]="transformation_https"
+    [name]="https_transformation"
     [display_name]="JSON to XML transformation HTTPS service"
     [description]="An HTTPS Service, which transforms JSON requests to XML and then forwards all requests to an HTTPS back-end service."
     [bal]="https_transformation.balx"
@@ -83,10 +83,10 @@ declare -A test_scenario3=(
     [skip]=false
 )
 declare -A test_scenario4=(
-    [name]="passthrough_http2_https"
-    [display_name]="Passthrough HTTP2 (HTTPS) service"
-    [bal]="http2_https_passthrough.balx"
+    [name]="h2_h2_passthrough"
+    [display_name]="Passthrough HTTP2 (HTTPS) service (h2 -> h2)"
     [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a HTTP2 (HTTPS) back-end service."
+    [bal]="h2_h2_passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http2-post-request.jmx"
@@ -96,10 +96,10 @@ declare -A test_scenario4=(
     [skip]=false
 )
 declare -A test_scenario5=(
-    [name]="passthrough_http2_https_downgrade"
-    [display_name]="Passthrough HTTP2 (HTTPS) downgrade service"
-    [bal]="http2_https_downgrade.balx"
+    [name]="h2_h1_downgrade"
+    [display_name]="Passthrough HTTP2 (HTTPS) downgrade service (h2 -> h1)"
     [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a HTTPS back-end service."
+    [bal]="h2_h1_downgrade.balx"
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http2-post-request.jmx"
