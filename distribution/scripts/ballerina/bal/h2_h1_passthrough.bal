@@ -37,7 +37,7 @@ service passthroughService on new http:Listener(9090, config = serviceConfig) {
         if (response is http:Response) {
             var result = caller->respond(response);
         } else {
-            log:printError("Error at http2_https_downgrade", err = response);
+            log:printError("Error at h2_h1_passthrough", err = response);
             http:Response res = new;
             res.statusCode = 500;
             res.setPayload(<string>response.detail().message);

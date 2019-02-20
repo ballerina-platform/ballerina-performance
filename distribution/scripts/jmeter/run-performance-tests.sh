@@ -109,9 +109,9 @@ declare -A test_scenario5=(
     [skip]=false
 )
 declare -A test_scenario6=(
-    [name]="passthrough_http2_http_downgrade"
-    [display_name]="Passthrough HTTP2 downgrade service"
-    [bal]="http2_http_downgrade.balx"
+    [name]="h2_h1c_passthrough"
+    [display_name]="Passthrough HTTP2 (HTTPS) service (h2 -> h1c)"
+    [bal]="h2_h1c_passthrough.balx"
     [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to a HTTP back-end service."
     [bal_flags]=""
     [path]="/passthrough"
