@@ -84,8 +84,8 @@ declare -A test_scenario3=(
 )
 declare -A test_scenario4=(
     [name]="h2_h2_passthrough"
-    [display_name]="Passthrough HTTP2 (HTTPS) service (h2 -> h2)"
-    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to an HTTP2 (HTTPS) back-end service."
+    [display_name]="Passthrough HTTP/2 (over TLS) service (h2 -> h2)"
+    [description]="An HTTPS Service exposed over HTTP/2 protocol, which forwards all requests to an HTTP/2 (over TLS) back-end service."
     [bal]="h2_h2_passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
@@ -97,8 +97,8 @@ declare -A test_scenario4=(
 )
 declare -A test_scenario5=(
     [name]="h2_h1_passthrough"
-    [display_name]="Passthrough HTTP2 (HTTPS) service (h2 -> h1)"
-    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to an HTTPS back-end service."
+    [display_name]="Passthrough HTTP/2 (over TLS) service (h2 -> h1)"
+    [description]="An HTTPS Service exposed over HTTP/2 protocol, which forwards all requests to an HTTPS back-end service."
     [bal]="h2_h1_passsthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
@@ -110,9 +110,9 @@ declare -A test_scenario5=(
 )
 declare -A test_scenario6=(
     [name]="h2_h1c_passthrough"
-    [display_name]="Passthrough HTTP2 (HTTPS) service (h2 -> h1c)"
+    [display_name]="Passthrough HTTP/2 (over TLS) service (h2 -> h1c)"
     [bal]="h2_h1c_passthrough.balx"
-    [description]="An HTTPS Service exposed over HTTP2 protocol, which forwards all requests to an HTTP back-end service."
+    [description]="An HTTPS Service exposed over HTTP/2 protocol, which forwards all requests to an HTTP back-end service."
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http2-post-request.jmx"
