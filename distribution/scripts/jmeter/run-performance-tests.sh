@@ -58,10 +58,10 @@ declare -A test_scenario1=(
     [skip]=false
 )
 declare -A test_scenario2=(
-    [name]="http_transformation"
+    [name]="h1c_transformation"
     [display_name]="JSON to XML transformation HTTP service"
     [description]="An HTTP Service, which transforms JSON requests to XML and then forwards all requests to an HTTP back-end service."
-    [bal]="http_transformation.balx"
+    [bal]="h1c_transformation.balx"
     [bal_flags]=""
     [path]="/transform"
     [jmx]="http-post-request.jmx"
@@ -70,10 +70,10 @@ declare -A test_scenario2=(
     [skip]=false
 )
 declare -A test_scenario3=(
-    [name]="https_transformation"
+    [name]="h1_transformation"
     [display_name]="JSON to XML transformation HTTPS service"
     [description]="An HTTPS Service, which transforms JSON requests to XML and then forwards all requests to an HTTPS back-end service."
-    [bal]="https_transformation.balx"
+    [bal]="h1_transformation.balx"
     [bal_flags]=""
     [path]="/transform"
     [jmx]="http-post-request.jmx"
