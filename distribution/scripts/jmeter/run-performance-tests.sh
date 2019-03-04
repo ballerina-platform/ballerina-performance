@@ -54,7 +54,7 @@ declare -A test_scenario1=(
     [jmx]="http-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
-    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
+    [backend_flags]="--ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
 declare -A test_scenario2=(
@@ -79,7 +79,7 @@ declare -A test_scenario3=(
     [jmx]="http-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
-    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
+    [backend_flags]="--ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
 declare -A test_scenario4=(
@@ -92,7 +92,7 @@ declare -A test_scenario4=(
     [jmx]="http2-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
-    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina --http-version 2.0"
+    [backend_flags]="--http2 --ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
 declare -A test_scenario5=(
@@ -105,7 +105,7 @@ declare -A test_scenario5=(
     [jmx]="http2-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
-    [backend_flags]="--enable-ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
+    [backend_flags]="--ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
 declare -A test_scenario6=(
