@@ -11,7 +11,7 @@ http:ServiceEndpointConfiguration serviceConfig = {
     }
 };
 
-http:ClientEndpointConfig sslClientConf = {
+http:ClientEndpointConfig clientConfig = {
     httpVersion: "2.0",
     secureSocket: {
         trustStore: {
@@ -22,7 +22,7 @@ http:ClientEndpointConfig sslClientConf = {
     }
 };
 
-http:Client nettyEP = new("https://netty:8688", config = sslClientConf);
+http:Client nettyEP = new("https://netty:8688", config = clientConfig);
 
 @http:ServiceConfig { basePath: "/passthrough" }
 service passthroughService on new http:Listener(9090, config = serviceConfig) {
