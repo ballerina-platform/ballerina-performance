@@ -10,7 +10,7 @@ http:ServiceEndpointConfiguration serviceConfig = {
     }
 };
 
-http:ClientEndpointConfig sslClientConf = {
+http:ClientEndpointConfig clientConfig = {
     secureSocket: {
         trustStore: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
@@ -20,7 +20,7 @@ http:ClientEndpointConfig sslClientConf = {
     }
 };
 
-http:Client nettyEP = new("https://netty:8688", config = sslClientConf);
+http:Client nettyEP = new("https://netty:8688", config = clientConfig);
 
 @http:ServiceConfig { basePath: "/transform" }
 service transformationService on new http:Listener(9090, config = serviceConfig) {
