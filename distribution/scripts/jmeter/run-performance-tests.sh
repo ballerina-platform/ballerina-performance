@@ -121,32 +121,19 @@ declare -A test_scenario6=(
     [skip]=false
 )
 declare -A test_scenario7=(
-    [name]="h2_h2_client_downgrade"
-    [display_name]="HTTP/2 client downgrade service (h2 -> h1)"
-    [description]="An HTTP/2(with TLS) client, sends requests to an HTTP/1.1(with TLS) back-end service. With ALPN negotiation, the client connection is downgraded to HTTP/1.1(with TLS)."
-    [bal]="h2_h2_passthrough.balx"
-    [bal_flags]=""
-    [path]="/passthrough"
-    [jmx]="http2-post-request.jmx"
-    [protocol]="https"
-    [use_backend]=true
-    [backend_flags]="--ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
-    [skip]=false
-)
-declare -A test_scenario8=(
-    [name]="h2_h2_server_downgrade"
-    [display_name]="HTTP/2 server downgrade service (h1 -> h2)"
-    [description]="An HTTP/2(with TLS) server, accepts requests from an HTTP/1.1(with TLS) client which downgrades the connection to HTTP/1.1(with TLS)."
+    [name]="h2_h2_client_and_server_downgrade"
+    [display_name]="HTTP/2 client and server downgrade service (h2 -> h2)"
+    [description]="An HTTP/2(with TLS) server accepts requests from an HTTP/1.1(with TLS) client and the HTTP/2(with TLS) client sends requests to an HTTP/1.1(with TLS) back-end service. Both the upstream and the downgrade connection is downgraded to HTTP/1.1(with TLS)."
     [bal]="h2_h2_passthrough.balx"
     [bal_flags]=""
     [path]="/passthrough"
     [jmx]="http-post-request.jmx"
     [protocol]="https"
     [use_backend]=true
-    [backend_flags]="--http2 --ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
+    [backend_flags]="--ssl --key-store-file $HOME/ballerinaKeystore.p12 --key-store-password ballerina"
     [skip]=false
 )
-declare -A test_scenario9=(
+declare -A test_scenario8=(
     [name]="websocket"
     [display_name]="Websocket"
     [description]="Websocket service"
@@ -158,7 +145,7 @@ declare -A test_scenario9=(
     [use_backend]=false
     [skip]=false
 )
-declare -A test_scenario10=(
+declare -A test_scenario9=(
     [name]="passthrough_http_observe_default"
     [display_name]="Passthrough HTTP Service with Default Observability"
     [description]="Observability with default configs"
@@ -170,7 +157,7 @@ declare -A test_scenario10=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario11=(
+declare -A test_scenario10=(
     [name]="passthrough_http_observe_metrics"
     [display_name]="Passthrough HTTP Service with Metrics"
     [description]="Metrics only"
@@ -182,7 +169,7 @@ declare -A test_scenario11=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario12=(
+declare -A test_scenario11=(
     [name]="passthrough_http_observe_tracing"
     [display_name]="Passthrough HTTP Service with Tracing"
     [description]="Tracing only"
@@ -194,7 +181,7 @@ declare -A test_scenario12=(
     [use_backend]=true
     [skip]=true
 )
-declare -A test_scenario13=(
+declare -A test_scenario12=(
     [name]="passthrough_http_observe_metrics_noop"
     [display_name]="Passthrough HTTP Service with Metrics (No-Op)"
     [description]="Metrics (with No-Op implementation) only"
@@ -206,7 +193,7 @@ declare -A test_scenario13=(
     [use_backend]=true
     [skip]=true
 )
-# declare -A test_scenario14=(
+# declare -A test_scenario13=(
 #     [name]="passthrough_http_observe_tracing_noop"
 #     [display_name]="Passthrough HTTP Service with Tracing (No-Op)"
 #     [description]="Tracing (with No-Op implementation) only"
