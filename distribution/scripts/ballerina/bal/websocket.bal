@@ -34,9 +34,12 @@ service basic on new http:WebSocketListener(9090) {
                 log:printError("Error sending ping", err = err);
             }
         } else if (text == "closeMe") {
-            _ = caller->close(statusCode = 1001,
+            var err = caller->close(statusCode = 1001,
                 reason = "You asked me to close the connection",
                 timeoutInSecs = 0);
+            if (err is error) {
+                log:printError("Error occurred when closing", err = err);
+            }
         } else {
             var err = caller->pushText(text);
             if (err is error) {
