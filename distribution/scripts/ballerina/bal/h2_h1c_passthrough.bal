@@ -30,7 +30,7 @@ http:ServiceEndpointConfiguration serviceConfig = {
 http:Client nettyEP = new("http://netty:8688");
 
 @http:ServiceConfig { basePath: "/passthrough" }
-service passthroughService on new http:Listener(9090, config = serviceConfig) {
+service passthroughService on new http:Listener(9090, serviceConfig) {
 
     @http:ResourceConfig {
         methods: ["POST"],
@@ -46,7 +46,7 @@ service passthroughService on new http:Listener(9090, config = serviceConfig) {
             log:printError("Error at h2_h1c_passthrough", err = response);
             http:Response res = new;
             res.statusCode = 500;
-            res.setPayload(<string>response.detail().message);
+            res.setPayload(response.detail()?.message);
             var result = caller->respond(res);
         }
     }

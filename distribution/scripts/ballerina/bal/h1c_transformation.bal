@@ -18,7 +18,7 @@ service transformationService on new http:Listener(9090) {
 
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
-                clinetreq.setXmlPayload(untaint xmlPayload);
+                clinetreq.setXmlPayload(<@untainted> xmlPayload);
 
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
@@ -28,14 +28,14 @@ service transformationService on new http:Listener(9090) {
                     log:printError("Error at h1c_transformation", err = response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(<string>response.detail().message);
+                    res.setPayload(response.detail()?.message);
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1c_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(untaint <string>xmlPayload.detail().message);
+                res.setPayload(<@untainted> xmlPayload.detail()?.message);
                 var result = caller->respond(res);
             }
 
@@ -43,7 +43,7 @@ service transformationService on new http:Listener(9090) {
             log:printError("Error at h1c_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(untaint <string>payload.detail().message);
+            res.setPayload(<@untainted> payload.detail()?.message);
             var result = caller->respond(res);
         }
     }
