@@ -20,10 +20,10 @@ http:ClientEndpointConfig clientConfig = {
     }
 };
 
-http:Client nettyEP = new("https://netty:8688", config = clientConfig);
+http:Client nettyEP = new("https://netty:8688", clientConfig);
 
 @http:ServiceConfig { basePath: "/transform" }
-service transformationService on new http:Listener(9090, config = serviceConfig) {
+service transformationService on new http:Listener(9090, serviceConfig) {
 
     @http:ResourceConfig {
         methods: ["POST"],
@@ -37,7 +37,7 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
 
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
-                clinetreq.setXmlPayload(untaint xmlPayload);
+                clinetreq.setXmlPayload(<@untainted> xmlPayload);
 
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
@@ -47,14 +47,14 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
                     log:printError("Error at h1_transformation", err = response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(<string>response.detail().message);
+                    res.setPayload(response.detail()?.message);
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(untaint <string>xmlPayload.detail().message);
+                res.setPayload(<@untainted> xmlPayload.detail()?.message);
                 var result = caller->respond(res);
             }
 
@@ -62,7 +62,7 @@ service transformationService on new http:Listener(9090, config = serviceConfig)
             log:printError("Error at h1_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(untaint <string>payload.detail().message);
+            res.setPayload(<@untainted> payload.detail()?.message);
             var result = caller->respond(res);
         }
     }
