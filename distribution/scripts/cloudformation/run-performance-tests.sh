@@ -27,6 +27,7 @@ export ballerina_ec2_instance_type=""
 
 export aws_cloudformation_template_filename="ballerina_perf_test_cfn.yaml"
 export application_name="Ballerina"
+export ec2_instance_name="ballerina"
 export metrics_file_prefix="ballerina"
 
 function usageCommand() {
@@ -40,7 +41,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts ":f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:hi:B:" opt; do
+while getopts ":u:f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:hi:B:" opt; do
     case "${opt}" in
     i)
         ballerina_installer=${OPTARG}
