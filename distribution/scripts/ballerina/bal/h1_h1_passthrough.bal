@@ -1,7 +1,7 @@
 import ballerina/http;
 import ballerina/log;
 
-http:ServiceEndpointConfiguration serviceConfig = {
+http:ListenerConfiguration serviceConfig = {
     secureSocket: {
         keyStore: {
             path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
