@@ -1,7 +1,7 @@
 import ballerina/http;
 import ballerina/log;
 
-http:ServiceEndpointConfiguration serviceConfig = {
+http:ListenerConfiguration serviceConfig = {
     httpVersion: "2.0",
     secureSocket: {
         keyStore: {
