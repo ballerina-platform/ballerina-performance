@@ -1,3 +1,7 @@
+//TODO: Remove this after code migration to 1.0
+public function main() {
+}
+
 //import ballerina/io;
 //import ballerina/log;
 //import ballerina/http;
