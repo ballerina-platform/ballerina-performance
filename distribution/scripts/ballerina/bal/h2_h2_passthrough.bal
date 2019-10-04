@@ -11,7 +11,7 @@ http:ListenerConfiguration serviceConfig = {
     }
 };
 
-http:ClientEndpointConfig clientConfig = {
+http:ClientConfiguration clientConfig = {
     httpVersion: "2.0",
     secureSocket: {
         trustStore: {

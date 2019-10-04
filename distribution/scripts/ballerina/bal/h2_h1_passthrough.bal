@@ -11,7 +11,7 @@ http:ListenerConfiguration serviceConfig = {
     }
 };
 
-http:ClientEndpointConfig clientConfig = {
+http:ClientConfiguration clientConfig = {
     secureSocket: {
         trustStore: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
