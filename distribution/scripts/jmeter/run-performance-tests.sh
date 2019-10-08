@@ -27,7 +27,7 @@ function initialize() {
     export ballerina_ssh_host=ballerina
     export ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
     echo "Downloading keystore file to $HOME."
-    scp $ballerina_ssh_host:/usr/lib/ballerina/ballerina-*/bre/security/ballerinaKeystore.p12 $HOME/
+    scp $ballerina_ssh_host:/usr/lib/ballerina/ballerina-*/distributions/jballerina-*/bre/security/ballerinaKeystore.p12 $HOME/
     scp $HOME/ballerinaKeystore.p12 $backend_ssh_host:
 }
 export -f initialize
@@ -215,7 +215,7 @@ function before_execute_test_scenario() {
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol")
     JMETER_JVM_ARGS="-Xbootclasspath/p:/opt/alpnboot/alpnboot.jar"
     echo "Starting Ballerina Service. Ballerina Program: $bal_file, Heap: $heap, Flags: ${bal_flags:-N/A}"
-    ssh $ballerina_ssh_host "./ballerina/ballerina-start.sh -p $HOME/ballerina/bal -b $bal_file -m $heap -- $bal_flags"
+    ssh $ballerina_ssh_host "sudo ./ballerina/ballerina-start.sh -p $HOME/ballerina/bal -b $bal_file -m $heap -- $bal_flags"
 }
 
 function after_execute_test_scenario() {
