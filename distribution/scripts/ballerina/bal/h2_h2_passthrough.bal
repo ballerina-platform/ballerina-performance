@@ -1,7 +1,7 @@
 import ballerina/http;
 import ballerina/log;
 
-http:ListenerConfiguration serviceConfig = {
+http:ServiceEndpointConfiguration serviceConfig = {
     httpVersion: "2.0",
     secureSocket: {
         keyStore: {
@@ -11,7 +11,7 @@ http:ListenerConfiguration serviceConfig = {
     }
 };
 
-http:ClientConfiguration clientConfig = {
+http:ClientEndpointConfig clientConfig = {
     httpVersion: "2.0",
     secureSocket: {
         trustStore: {
@@ -22,10 +22,10 @@ http:ClientConfiguration clientConfig = {
     }
 };
 
-http:Client nettyEP = new("https://netty:8688", clientConfig);
+http:Client nettyEP = new("https://netty:8688", config = clientConfig);
 
 @http:ServiceConfig { basePath: "/passthrough" }
-service passthroughService on new http:Listener(9090, serviceConfig) {
+service passthroughService on new http:Listener(9090, config = serviceConfig) {
 
     @http:ResourceConfig {
         methods: ["POST"],
@@ -41,7 +41,7 @@ service passthroughService on new http:Listener(9090, serviceConfig) {
             log:printError("Error at h2_h2_passthrough", err = response);
             http:Response res = new;
             res.statusCode = 500;
-            res.setPayload(response.detail()?.message);
+            res.setPayload(<string>response.detail().message);
             var result = caller->respond(res);
         }
     }
