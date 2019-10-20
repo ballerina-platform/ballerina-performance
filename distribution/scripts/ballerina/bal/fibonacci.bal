@@ -7,10 +7,10 @@ service fibonacciService on new http:Listener(9090) {
         methods: ["POST"],
         path: "/{input}"
     }
-    resource function passthrough(http:Caller caller, http:Request clientRequest, int input) {
+    resource function fibonacciResource(http:Caller caller, http:Request clientRequest, int input) {
         http:Response response = new;
         int payload = fibonacci(input);
-        var result = caller->respond(payload);
+        var result = caller->respond(input.toString() + "th fibonacci number: " + payload.toString());
     }
 }
 
