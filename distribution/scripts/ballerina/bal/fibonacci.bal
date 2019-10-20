@@ -1,16 +1,7 @@
 import ballerina/http;
 
-http:ListenerConfiguration serviceConfig = {
-    secureSocket: {
-        keyStore: {
-            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
-            password: "ballerina"
-        }
-    }
-};
-
 @http:ServiceConfig { basePath: "/fibonacci" }
-service passthroughService on new http:Listener(9090, serviceConfig) {
+service fibonacciService on new http:Listener(9090) {
 
     @http:ResourceConfig {
         methods: ["POST"],
