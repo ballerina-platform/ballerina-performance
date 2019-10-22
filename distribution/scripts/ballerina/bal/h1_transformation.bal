@@ -1,8 +1,7 @@
 import ballerina/http;
 import ballerina/log;
-import ballerina/xmlutils;
 
-http:ListenerConfiguration serviceConfig = {
+http:ServiceEndpointConfiguration serviceConfig = {
     secureSocket: {
         keyStore: {
             path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
@@ -11,7 +10,7 @@ http:ListenerConfiguration serviceConfig = {
     }
 };
 
-http:ClientConfiguration clientConfig = {
+http:ClientEndpointConfig clientConfig = {
     secureSocket: {
         trustStore: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
@@ -21,10 +20,10 @@ http:ClientConfiguration clientConfig = {
     }
 };
 
-http:Client nettyEP = new("https://netty:8688", clientConfig);
+http:Client nettyEP = new("https://netty:8688", config = clientConfig);
 
 @http:ServiceConfig { basePath: "/transform" }
-service transformationService on new http:Listener(9090, serviceConfig) {
+service transformationService on new http:Listener(9090, config = serviceConfig) {
 
     @http:ResourceConfig {
         methods: ["POST"],
@@ -34,11 +33,11 @@ service transformationService on new http:Listener(9090, serviceConfig) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
-            xml|error xmlPayload = xmlutils:fromJSON(payload);
+            xml|error xmlPayload = payload.toXML({});
 
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
-                clinetreq.setXmlPayload(<@untainted> xmlPayload);
+                clinetreq.setXmlPayload(untaint xmlPayload);
 
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
@@ -48,21 +47,21 @@ service transformationService on new http:Listener(9090, serviceConfig) {
                     log:printError("Error at h1_transformation", err = response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(response.detail()?.message);
+                    res.setPayload(<string>response.detail().message);
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(<@untainted> xmlPayload.detail()?.message);
+                res.setPayload(untaint <string>xmlPayload.detail().message);
                 var result = caller->respond(res);
             }
         } else {
             log:printError("Error at h1_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(<@untainted> payload.detail()?.message);
+            res.setPayload(untaint <string>payload.detail().message);
             var result = caller->respond(res);
         }
     }

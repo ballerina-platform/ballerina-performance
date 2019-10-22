@@ -1,6 +1,5 @@
 import ballerina/http;
 import ballerina/log;
-import ballerina/xmlutils;
 
 http:Client nettyEP = new("http://netty:8688");
 
@@ -15,11 +14,11 @@ service transformationService on new http:Listener(9090) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
-            xml|error xmlPayload = xmlutils:fromJSON(payload);
+            xml|error xmlPayload = payload.toXML({});
 
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
-                clinetreq.setXmlPayload(<@untainted> xmlPayload);
+                clinetreq.setXmlPayload(untaint xmlPayload);
 
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
@@ -29,21 +28,22 @@ service transformationService on new http:Listener(9090) {
                     log:printError("Error at h1c_transformation", err = response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(response.detail()?.message);
+                    res.setPayload(<string>response.detail().message);
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1c_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(<@untainted> xmlPayload.detail()?.message);
+                res.setPayload(untaint <string>xmlPayload.detail().message);
                 var result = caller->respond(res);
             }
+
         } else {
             log:printError("Error at h1c_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(<@untainted> payload.detail()?.message);
+            res.setPayload(untaint <string>payload.detail().message);
             var result = caller->respond(res);
         }
     }
