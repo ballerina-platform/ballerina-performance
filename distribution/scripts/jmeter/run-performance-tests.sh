@@ -193,6 +193,42 @@ declare -A test_scenario12=(
     [use_backend]=true
     [skip]=true
 )
+declare -A test_scenario13=(
+    [name]="10th_fibonacci"
+    [display_name]="10th Fibonacci Number"
+    [description]="An HTTP Service, which calculate the 10th fibonacci number."
+    [bal]="fibonacci.jar"
+    [bal_flags]=""
+    [path]="/fibonacci/10"
+    [jmx]="http-post-request.jmx"
+    [protocol]="http"
+    [use_backend]=false
+    [skip]=false
+)
+declare -A test_scenario14=(
+    [name]="20th_fibonacci"
+    [display_name]="20th Fibonacci Number"
+    [description]="An HTTP Service, which calculate the 20th fibonacci number."
+    [bal]="fibonacci.jar"
+    [bal_flags]=""
+    [path]="/fibonacci/20"
+    [jmx]="http-post-request.jmx"
+    [protocol]="http"
+    [use_backend]=false
+    [skip]=false
+)
+declare -A test_scenario15=(
+    [name]="30th_fibonacci"
+    [display_name]="30th Fibonacci Number"
+    [description]="An HTTP Service, which calculate the 30th fibonacci number."
+    [bal]="fibonacci.jar"
+    [bal_flags]=""
+    [path]="/fibonacci/30"
+    [jmx]="http-post-request.jmx"
+    [protocol]="http"
+    [use_backend]=false
+    [skip]=false
+)
 # declare -A test_scenario13=(
 #     [name]="passthrough_http_observe_tracing_noop"
 #     [display_name]="Passthrough HTTP Service with Tracing (No-Op)"
