@@ -112,13 +112,13 @@ Usage:
 -f: The Ballerina Performance Distribution containing the scripts to run performance tests.
 -k: The Amazon EC2 Key File.
 -u: The Ballerina Installer URL.
--n: The Amazon EC2 Key Name. Default: ballerina-perf-test.
--b: The Amazon S3 Bucket Name. Default: ballerinaperformancetest.
--r: The Amazon S3 Bucket Region. Default: us-east-2.
--J: The Amazon EC2 Instance Type for JMeter Client. Default: t2.micro.
--S: The Amazon EC2 Instance Type for JMeter Server. Default: t2.micro.
--B: The Amazon EC2 Instance Type for Ballerina. Default: t2.micro.
--N: The Amazon EC2 Instance Type for Netty (Backend) Service. Default: t2.micro.
+-n: The Amazon EC2 Key Name. Default: ballerina-aws.
+-b: The Amazon S3 Bucket Name. Default: ballerina-performance.
+-r: The Amazon S3 Bucket Region. Default: us-east-1.
+-J: The Amazon EC2 Instance Type for JMeter Client. Default: c5.xlarge.
+-S: The Amazon EC2 Instance Type for JMeter Server. Default: c5.large.
+-B: The Amazon EC2 Instance Type for Ballerina. Default: c5.xlarge.
+-N: The Amazon EC2 Instance Type for Netty (Backend) Service. Default: c5.xlarge.
 -h: Display this help and exit.
 ```
 
