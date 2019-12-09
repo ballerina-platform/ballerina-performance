@@ -27,7 +27,7 @@ function initialize() {
     export ballerina_ssh_host=ballerina
     export ballerina_host=$(get_ssh_hostname $ballerina_ssh_host)
     echo "Downloading keystore file to $HOME."
-    scp $ballerina_ssh_host:/usr/lib/ballerina/ballerina-*/distributions/jballerina-*/bre/security/ballerinaKeystore.p12 $HOME/
+    scp $ballerina_ssh_host:/usr/lib/ballerina/distributions/jballerina-*/bre/security/ballerinaKeystore.p12 $HOME/
     scp $HOME/ballerinaKeystore.p12 $backend_ssh_host:
 }
 export -f initialize
