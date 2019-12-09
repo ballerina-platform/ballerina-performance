@@ -85,4 +85,6 @@ function setup() {
 }
 export -f setup
 
+export BALLERINA_HOME="ballerina home"
+
 $script_dir/setup-common.sh "${opts[@]}" "$@"
