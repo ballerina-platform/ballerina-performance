@@ -5,7 +5,7 @@ import ballerina/xmlutils;
 http:ListenerConfiguration serviceConfig = {
     secureSocket: {
         keyStore: {
-            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
+            path: "${BALLERINA_HOME}/bre/security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
@@ -14,7 +14,7 @@ http:ListenerConfiguration serviceConfig = {
 http:ClientConfiguration clientConfig = {
     secureSocket: {
         trustStore: {
-            path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
+            path: "${BALLERINA_HOME}/bre/security/ballerinaTruststore.p12",
             password: "ballerina"
         },
         verifyHostname: false

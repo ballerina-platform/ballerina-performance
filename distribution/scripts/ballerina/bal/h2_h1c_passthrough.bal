@@ -21,7 +21,7 @@ http:ListenerConfiguration serviceConfig = {
     httpVersion: "2.0",
     secureSocket: {
         keyStore: {
-            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
+            path: "${BALLERINA_HOME}/bre/security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
