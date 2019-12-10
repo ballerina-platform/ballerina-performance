@@ -111,7 +111,9 @@ export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xlogg
 JAVA_OPTS+=" -Xms${heap_size} -Xmx${heap_size}"
 JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${ballerina_path}/logs/heap-dump.hprof""
 
-export BALLERINA_HOME="ballerina home"
+echo "Setting the BALLERINA_HOME env variable"
+export BALLERINA_HOME=$(ballerina home)
+echo "Ballerina Home: $BALLERINA_HOME"
 
 ballerina_command="java -jar ${bal_flags} ${ballerina_file}"
 echo "Starting Ballerina: $ballerina_command"
