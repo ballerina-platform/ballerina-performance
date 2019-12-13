@@ -115,7 +115,7 @@ echo "Setting the BALLERINA_HOME env variable"
 export BALLERINA_HOME=$(ballerina home)
 echo "Ballerina Home: $BALLERINA_HOME"
 
-ballerina_command="java -jar ${bal_flags} ${ballerina_file}"
+ballerina_command="ballerina run ${bal_flags} ${ballerina_file}"
 echo "Starting Ballerina: $ballerina_command"
 cd $ballerina_path
 nohup $ballerina_command &>${ballerina_path}/logs/ballerina.log &
