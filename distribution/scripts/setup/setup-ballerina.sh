@@ -75,6 +75,9 @@ function setup() {
     dpkg -i $ballerina_installer
     echo "$netty_host netty" >>/etc/hosts
 
+    export JAVA_HOME=/usr/lib/ballerina/dependencies/jdk8u202-b08-jre
+    export PATH=$PATH:$JAVA_HOME/bin
+
     # Build Ballerina Files
     pushd $script_dir/../ballerina/bal
     for bal_file in *.bal; do
