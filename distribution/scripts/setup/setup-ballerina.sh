@@ -19,13 +19,6 @@
 # Setup Ballerina
 # ----------------------------------------------------------------------------
 
-# Make sure the script is running as root.
-if [ "$UID" -ne "0" ]; then
-    echo "You must be root to run $0. Try following"
-    echo "sudo $0"
-    exit 9
-fi
-
 export script_name="$0"
 export script_dir=$(dirname "$0")
 export ballerina_installer=""
