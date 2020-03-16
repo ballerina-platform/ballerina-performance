@@ -73,6 +73,7 @@ export -f validate
 
 function setup() {
     dpkg -i $ballerina_installer
+    ballerina -v
     echo "$netty_host netty" >>/etc/hosts
 
     # Build Ballerina Files
