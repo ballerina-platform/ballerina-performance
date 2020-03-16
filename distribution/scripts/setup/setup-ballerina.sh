@@ -78,10 +78,10 @@ function setup() {
 
     # Build Ballerina Files
     pushd $script_dir/../ballerina/bal
-    for bal_file in *.bal; do
-        echo "Building $bal_file file"
-        ballerina build ${bal_file}
-    done
+#    for bal_file in *.bal; do
+#        echo "Building $bal_file file"
+#        ballerina build ${bal_file}
+#    done
     popd
 }
 export -f setup
