@@ -1,7 +1,7 @@
 import ballerina/http;
 import ballerina/log;
 
-http:Client nettyEP = new("http://netty:8688", config = { cache: { enabled: false }});
+http:Client nettyEP = new("http://netty:8688");
 
 @http:ServiceConfig { basePath: "/passthrough" }
 service passthroughService on new http:Listener(9090) {
