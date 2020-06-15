@@ -41,7 +41,7 @@ service passthroughService on new http:Listener(9090, serviceConfig) {
             log:printError("Error at h2_h2_passthrough", err = response);
             http:Response res = new;
             res.statusCode = 500;
-            res.setPayload(response.detail()?.message);
+            res.setPayload(response.message());
             var result = caller->respond(res);
         }
     }

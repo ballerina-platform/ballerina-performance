@@ -48,21 +48,21 @@ service transformationService on new http:Listener(9090, serviceConfig) {
                     log:printError("Error at h1_transformation", err = response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(response.detail()?.message);
+                    res.setPayload(response.message());
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(<@untainted> xmlPayload.detail()?.message);
+                res.setPayload(<@untainted> xmlPayload.message());
                 var result = caller->respond(res);
             }
         } else {
             log:printError("Error at h1_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(<@untainted> payload.detail()?.message);
+            res.setPayload(<@untainted> payload.message());
             var result = caller->respond(res);
         }
     }
