@@ -32,6 +32,6 @@ script_dir=$(dirname "$0")
 alpnboot_dir="/opt/alpnboot"
 mkdir -p $alpnboot_dir
 
-$script_dir/setup-jmeter.sh "$@" -j bzm-http2 -j websocket-samplers \
+$script_dir/setup-jmeter.sh "$@" -j bzm-http2 \
     -w http://search.maven.org/remotecontent?filepath=org/mortbay/jetty/alpn/alpn-boot/8.1.13.v20181017/alpn-boot-8.1.13.v20181017.jar \
     -o $alpnboot_dir/alpnboot.jar
