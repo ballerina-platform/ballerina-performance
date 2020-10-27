@@ -43,12 +43,12 @@ service transformationService on new http:Listener(9090, serviceConfig) {
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
                 if (response is http:Response) {
-                    var result = caller->respond(response);
+                    var result = caller->respond(<@untainted>response);
                 } else {
-                    log:printError("Error at h1_transformation", err = response);
+                    log:printError("Error at h1_transformation", <error>response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(response.message());
+                    res.setPayload((<@untainted error>response).message());
                     var result = caller->respond(res);
                 }
             } else {
