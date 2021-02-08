@@ -24,13 +24,8 @@ http:ClientConfiguration clientConfig = {
 
 http:Client nettyEP = check new("https://netty:8688", clientConfig);
 
-//@http:ServiceConfig { basePath: "/passthrough" }
 service http:Service /passthrough on new http:Listener(9090, serviceConfig) {
 
-    //@http:ResourceConfig {
-        //methods: ["POST"],
-        //path: "/"
-    //}
     resource function post .(http:Caller caller, http:Request clientRequest) {
 
         var response = nettyEP->forward("/service/EchoService", clientRequest);

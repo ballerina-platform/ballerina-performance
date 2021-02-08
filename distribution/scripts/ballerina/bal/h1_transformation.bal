@@ -23,13 +23,8 @@ http:ClientConfiguration clientConfig = {
 
 http:Client nettyEP = check new("https://netty:8688", clientConfig);
 
-//@http:ServiceConfig { basePath: "/transform" }
 service http:Service /transform on new http:Listener(9090, serviceConfig) {
 
-    //@http:ResourceConfig {
-        //methods: ["POST"],
-        //path: "/"
-    //}
     resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
 
