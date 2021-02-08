@@ -2,16 +2,16 @@ import ballerina/http;
 import ballerina/log;
 import ballerina/xmlutils;
 
-http:Client nettyEP = new("http://netty:8688");
+http:Client nettyEP = check new("http://netty:8688");
 
-@http:ServiceConfig { basePath: "/transform" }
-service transformationService on new http:Listener(9090) {
+//@http:ServiceConfig { basePath: "/transform" }
+service http:Service /transform on new http:Listener(9090) {
 
-    @http:ResourceConfig {
-        methods: ["POST"],
-        path: "/"
-    }
-    resource function transform(http:Caller caller, http:Request req) {
+    //@http:ResourceConfig {
+        //methods: ["POST"],
+        //path: "/"
+    //}
+    resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
@@ -26,7 +26,7 @@ service transformationService on new http:Listener(9090) {
                 if (response is http:Response) {
                     var result = caller->respond(<@untainted>response);
                 } else {
-                    log:printError("Error at h1c_transformation", <error>response);
+                    log:printError("Error at h1c_transformation", err = <error>response);
                     http:Response res = new;
                     res.statusCode = 500;
                     res.setPayload((<@untainted error>response).message());
