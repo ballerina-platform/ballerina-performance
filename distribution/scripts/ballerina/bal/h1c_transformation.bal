@@ -6,7 +6,7 @@ http:Client nettyEP = check new("http://netty:8688");
 
 service http:Service /transform on new http:Listener(9090) {
 
-resource function post .(http:Caller caller, http:Request req) {
+    resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {

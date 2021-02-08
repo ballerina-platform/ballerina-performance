@@ -5,7 +5,7 @@ http:Client nettyEP =check new("http://netty:8688");
 
 service http:Service /passthrough on new http:Listener(9090) {
 
-resource function post .(http:Caller caller, http:Request clientRequest) {
+    resource function post .(http:Caller caller, http:Request clientRequest) {
         var response = nettyEP->forward("/service/EchoService", clientRequest);
 
         if (response is http:Response) {
