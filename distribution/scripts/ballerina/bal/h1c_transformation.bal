@@ -2,16 +2,11 @@ import ballerina/http;
 import ballerina/log;
 import ballerina/xmlutils;
 
-http:Client nettyEP = new("http://netty:8688");
+http:Client nettyEP = check new("http://netty:8688");
 
-@http:ServiceConfig { basePath: "/transform" }
-service transformationService on new http:Listener(9090) {
+service http:Service /transform on new http:Listener(9090) {
 
-    @http:ResourceConfig {
-        methods: ["POST"],
-        path: "/"
-    }
-    resource function transform(http:Caller caller, http:Request req) {
+    resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
@@ -24,26 +19,26 @@ service transformationService on new http:Listener(9090) {
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
                 if (response is http:Response) {
-                    var result = caller->respond(response);
+                    var result = caller->respond(<@untainted>response);
                 } else {
-                    log:printError("Error at h1c_transformation", err = response);
+                    log:printError("Error at h1c_transformation", err = <error>response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(response.detail()?.message);
+                    res.setPayload((<@untainted error>response).message());
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1c_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(<@untainted> xmlPayload.detail()?.message);
+                res.setPayload(<@untainted> xmlPayload.message());
                 var result = caller->respond(res);
             }
         } else {
             log:printError("Error at h1c_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(<@untainted> payload.detail()?.message);
+            res.setPayload(<@untainted> payload.message());
             var result = caller->respond(res);
         }
     }

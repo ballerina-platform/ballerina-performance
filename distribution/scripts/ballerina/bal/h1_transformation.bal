@@ -21,16 +21,11 @@ http:ClientConfiguration clientConfig = {
     }
 };
 
-http:Client nettyEP = new("https://netty:8688", clientConfig);
+http:Client nettyEP = check new("https://netty:8688", clientConfig);
 
-@http:ServiceConfig { basePath: "/transform" }
-service transformationService on new http:Listener(9090, serviceConfig) {
+service http:Service /transform on new http:Listener(9090, serviceConfig) {
 
-    @http:ResourceConfig {
-        methods: ["POST"],
-        path: "/"
-    }
-    resource function transform(http:Caller caller, http:Request req) {
+    resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
 
         if (payload is json) {
@@ -43,26 +38,26 @@ service transformationService on new http:Listener(9090, serviceConfig) {
                 var response = nettyEP->post("/service/EchoService", clinetreq);
 
                 if (response is http:Response) {
-                    var result = caller->respond(response);
+                    var result = caller->respond(<@untainted>response);
                 } else {
-                    log:printError("Error at h1_transformation", err = response);
+                    log:printError("Error at h1_transformation", err = <error>response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload(response.detail()?.message);
+                    res.setPayload((<@untainted error>response).message());
                     var result = caller->respond(res);
                 }
             } else {
                 log:printError("Error at h1_transformation", err = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(<@untainted> xmlPayload.detail()?.message);
+                res.setPayload(<@untainted> xmlPayload.message());
                 var result = caller->respond(res);
             }
         } else {
             log:printError("Error at h1_transformation", err = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(<@untainted> payload.detail()?.message);
+            res.setPayload(<@untainted> payload.message());
             var result = caller->respond(res);
         }
     }

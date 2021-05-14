@@ -73,15 +73,14 @@ export -f validate
 
 function setup() {
     dpkg -i $ballerina_installer
-    ballerina -v
     echo "$netty_host netty" >>/etc/hosts
 
     # Build Ballerina Files
     pushd $script_dir/../ballerina/bal
-#    for bal_file in *.bal; do
-#        echo "Building $bal_file file"
-#        ballerina build ${bal_file}
-#    done
+    for bal_file in *.bal; do
+        echo "Building $bal_file file"
+        bal build ${bal_file}
+    done
     popd
 }
 export -f setup
