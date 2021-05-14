@@ -5,19 +5,14 @@ import ballerina/xmldata;
 http:Client nettyEP = check new("http://netty:8688");
 
 service http:Service /transform on new http:Listener(9090) {
-
     resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
-
         if (payload is json) {
             xml|xmldata:Error? xmlPayload = xmldata:fromJson(payload);
-
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
                 clinetreq.setXmlPayload(<@untainted> xmlPayload);
-
                 var response = nettyEP->post("/service/EchoService", clinetreq);
-
                 if (response is http:Response) {
                     error? result = caller->respond(<@untainted>response);
                 } else {

@@ -1,16 +1,16 @@
 import ballerina/http;
 import ballerina/log;
 
-http:ListenerConfiguration serviceConfig = {
+listener http:Listener securedEP = new(9090, {
     secureSocket: {
         key: {
             path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
-};
+});
 
-http:ClientConfiguration clientConfig = {
+http:Client nettyEP = check new("https://netty:8688", {
     secureSocket: {
         cert: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
@@ -18,12 +18,9 @@ http:ClientConfiguration clientConfig = {
         },
         verifyHostName: false
     }
-};
+});
 
-http:Client nettyEP = check new("https://netty:8688", clientConfig);
-
-service http:Service /passthrough on new http:Listener(9090, serviceConfig) {
-
+service http:Service /passthrough on securedEP {
     resource function post .(http:Caller caller, http:Request clientRequest) {
         var response = nettyEP->forward("/service/EchoService", clientRequest);
         if (response is http:Response) {

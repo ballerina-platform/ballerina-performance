@@ -17,7 +17,7 @@
 import ballerina/http;
 import ballerina/log;
 
-http:ListenerConfiguration serviceConfig = {
+listener http:Listener securedEP = new(9090, {
     httpVersion: "2.0",
     secureSocket: {
         key: {
@@ -25,16 +25,13 @@ http:ListenerConfiguration serviceConfig = {
             password: "ballerina"
         }
     }
-};
+});
 
 http:Client nettyEP = check new("http://netty:8688");
 
-service http:Service /passthrough on new http:Listener(9090, serviceConfig) {
-
+service http:Service /passthrough on securedEP {
     resource function post .(http:Caller caller, http:Request clientRequest) {
-
         var response = nettyEP->forward("/service/EchoService", clientRequest);
-
         if (response is http:Response) {
             error? result = caller->respond(<@untainted>response);
         } else {
