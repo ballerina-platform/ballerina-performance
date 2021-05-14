@@ -3,7 +3,7 @@ import ballerina/log;
 
 http:ListenerConfiguration serviceConfig = {
     secureSocket: {
-        keyStore: {
+        key: {
             path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
             password: "ballerina"
         }
@@ -12,11 +12,11 @@ http:ListenerConfiguration serviceConfig = {
 
 http:ClientConfiguration clientConfig = {
     secureSocket: {
-        trustStore: {
+        cert: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
             password: "ballerina"
         },
-        verifyHostname: false
+        verifyHostName: false
     }
 };
 
@@ -27,13 +27,13 @@ service http:Service /passthrough on new http:Listener(9090, serviceConfig) {
     resource function post .(http:Caller caller, http:Request clientRequest) {
         var response = nettyEP->forward("/service/EchoService", clientRequest);
         if (response is http:Response) {
-            var result = caller->respond(<@untainted>response);
+            error? result = caller->respond(<@untainted>response);
         } else {
-            log:printError("Error at h1_h1_passthrough", err = <error>response);
+            log:printError("Error at h1_h1_passthrough", 'error = response);
             http:Response res = new;
             res.statusCode = 500;
             res.setPayload((<@untainted error>response).message());
-            var result = caller->respond(res);
+            error? result = caller->respond(res);
         }
     }
 }
