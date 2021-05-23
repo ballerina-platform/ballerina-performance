@@ -12,7 +12,7 @@ service http:Service /transform on new http:Listener(9090) {
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
                 clinetreq.setXmlPayload(<@untainted> xmlPayload);
-                var response = nettyEP->post("/service/EchoService", clinetreq);
+                http:Response|http:ClientError response = nettyEP->post("/service/EchoService", clinetreq);
                 if (response is http:Response) {
                     error? result = caller->respond(<@untainted>response);
                 } else {
