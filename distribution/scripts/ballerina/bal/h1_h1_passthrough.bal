@@ -10,7 +10,7 @@ listener http:Listener securedEP = new(9090, {
     }
 });
 
-http:Client nettyEP = check new("https://netty:8688", {
+final http:Client nettyEP = check new("https://netty:8688", {
     secureSocket: {
         cert: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",

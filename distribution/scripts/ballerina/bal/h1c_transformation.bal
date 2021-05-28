@@ -2,7 +2,7 @@ import ballerina/http;
 import ballerina/log;
 import ballerina/xmldata;
 
-http:Client nettyEP = check new("http://netty:8688");
+final http:Client nettyEP = check new("http://netty:8688");
 
 service http:Service /transform on new http:Listener(9090) {
     resource function post .(http:Caller caller, http:Request req) {

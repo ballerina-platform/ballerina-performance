@@ -11,7 +11,7 @@ listener http:Listener securedEP = new(9090, {
     }
 });
 
-http:Client nettyEP = check new("https://netty:8688", {
+final http:Client nettyEP = check new("https://netty:8688", {
     httpVersion: "2.0",
     secureSocket: {
         cert: {

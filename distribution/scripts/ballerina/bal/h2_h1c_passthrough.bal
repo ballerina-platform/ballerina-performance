@@ -27,7 +27,7 @@ listener http:Listener securedEP = new(9090, {
     }
 });
 
-http:Client nettyEP = check new("http://netty:8688");
+final http:Client nettyEP = check new("http://netty:8688");
 
 service http:Service /passthrough on securedEP {
     resource function post .(http:Caller caller, http:Request clientRequest) {
