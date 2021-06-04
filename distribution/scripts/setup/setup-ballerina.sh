@@ -79,7 +79,7 @@ function setup() {
     pushd $script_dir/../ballerina/bal
     for bal_file in *.bal; do
         echo "Building $bal_file file"
-        ballerina build ${bal_file}
+        bal build ${bal_file}
     done
     popd
 }

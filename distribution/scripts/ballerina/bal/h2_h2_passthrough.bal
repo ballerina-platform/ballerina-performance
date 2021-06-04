@@ -1,48 +1,38 @@
 import ballerina/http;
 import ballerina/log;
 
-http:ListenerConfiguration serviceConfig = {
-    httpVersion: "2.0",
-    secureSocket: {
-        keyStore: {
+listener http:Listener securedEP = new(9090,
+    httpVersion = "2.0",
+    secureSocket = {
+        key: {
             path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
-};
+);
 
-http:ClientConfiguration clientConfig = {
-    httpVersion: "2.0",
-    secureSocket: {
-        trustStore: {
+final http:Client nettyEP = check new("https://netty:8688",
+    httpVersion = "2.0",
+    secureSocket = {
+        cert: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
             password: "ballerina"
         },
-        verifyHostname: false
+        verifyHostName: false
     }
-};
+);
 
-http:Client nettyEP = new("https://netty:8688", clientConfig);
-
-@http:ServiceConfig { basePath: "/passthrough" }
-service passthroughService on new http:Listener(9090, serviceConfig) {
-
-    @http:ResourceConfig {
-        methods: ["POST"],
-        path: "/"
-    }
-    resource function passthrough(http:Caller caller, http:Request clientRequest) {
-
-        var response = nettyEP->forward("/service/EchoService", clientRequest);
-
+service /passthrough on securedEP {
+    resource function post .(http:Caller caller, http:Request clientRequest) {
+        http:Response|http:ClientError response = nettyEP->forward("/service/EchoService", clientRequest);
         if (response is http:Response) {
-            var result = caller->respond(<@untainted>response);
+            error? result = caller->respond(response);
         } else {
-            log:printError("Error at h2_h2_passthrough", <error>response);
+            log:printError("Error at h2_h2_passthrough", 'error = response);
             http:Response res = new;
             res.statusCode = 500;
-            res.setPayload((<@untainted error>response).message());
-            var result = caller->respond(res);
+            res.setPayload(response.message());
+            error? result = caller->respond(res);
         }
     }
 }

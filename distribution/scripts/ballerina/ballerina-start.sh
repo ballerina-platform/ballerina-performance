@@ -106,12 +106,12 @@ fi
 
 echo "Setting Heap to ${heap_size}"
 
-echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${ballerina_path}/logs/gc.log"
-JAVA_OPTS+=" -Xms${heap_size} -Xmx${heap_size}"
+#echo "Enabling GC Logs"
+#export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${ballerina_path}/logs/gc.log"
+export JAVA_OPTS=" -Xms${heap_size} -Xmx${heap_size}"
 JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${ballerina_path}/logs/heap-dump.hprof""
 
-ballerina_command="ballerina run ${bal_flags} ${ballerina_file}"
+ballerina_command="bal run ${bal_flags} ${ballerina_file}"
 echo "Starting Ballerina: $ballerina_command"
 cd $ballerina_path
 nohup $ballerina_command &>${ballerina_path}/logs/ballerina.log &

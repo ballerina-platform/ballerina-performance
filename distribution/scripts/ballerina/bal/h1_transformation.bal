@@ -1,69 +1,57 @@
 import ballerina/http;
 import ballerina/log;
-import ballerina/xmlutils;
+import ballerina/xmldata;
 
-http:ListenerConfiguration serviceConfig = {
-    secureSocket: {
-        keyStore: {
+listener http:Listener securedEP = new(9090,
+    secureSocket = {
+        key: {
             path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
-};
+);
 
-http:ClientConfiguration clientConfig = {
-    secureSocket: {
-        trustStore: {
+final http:Client nettyEP = check new("https://netty:8688",
+    secureSocket = {
+        cert: {
             path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
             password: "ballerina"
         },
-        verifyHostname: false
+        verifyHostName: false
     }
-};
+);
 
-http:Client nettyEP = new("https://netty:8688", clientConfig);
-
-@http:ServiceConfig { basePath: "/transform" }
-service transformationService on new http:Listener(9090, serviceConfig) {
-
-    @http:ResourceConfig {
-        methods: ["POST"],
-        path: "/"
-    }
-    resource function transform(http:Caller caller, http:Request req) {
+service /transform on securedEP {
+    resource function post .(http:Caller caller, http:Request req) {
         json|error payload = req.getJsonPayload();
-
         if (payload is json) {
-            xml|error xmlPayload = xmlutils:fromJSON(payload);
-
+            xml|xmldata:Error? xmlPayload = xmldata:fromJson(payload);
             if (xmlPayload is xml) {
                 http:Request clinetreq = new;
-                clinetreq.setXmlPayload(<@untainted> xmlPayload);
-
-                var response = nettyEP->post("/service/EchoService", clinetreq);
-
+                clinetreq.setXmlPayload(xmlPayload);
+                http:Response|http:ClientError response = nettyEP->post("/service/EchoService", clinetreq);
                 if (response is http:Response) {
-                    var result = caller->respond(<@untainted>response);
+                    error? result = caller->respond(response);
                 } else {
-                    log:printError("Error at h1_transformation", <error>response);
+                    log:printError("Error at h1_transformation", 'error = response);
                     http:Response res = new;
                     res.statusCode = 500;
-                    res.setPayload((<@untainted error>response).message());
-                    var result = caller->respond(res);
+                    res.setPayload(response.message());
+                    error? result = caller->respond(res);
                 }
-            } else {
-                log:printError("Error at h1_transformation", err = xmlPayload);
+            } else if (xmlPayload is xmldata:Error) {
+                log:printError("Error at h1_transformation", 'error = xmlPayload);
                 http:Response res = new;
                 res.statusCode = 400;
-                res.setPayload(<@untainted> xmlPayload.message());
-                var result = caller->respond(res);
+                res.setPayload(xmlPayload.message());
+                error? result = caller->respond(res);
             }
         } else {
-            log:printError("Error at h1_transformation", err = payload);
+            log:printError("Error at h1_transformation", 'error = payload);
             http:Response res = new;
             res.statusCode = 400;
-            res.setPayload(<@untainted> payload.message());
-            var result = caller->respond(res);
+            res.setPayload(payload.message());
+            error? result = caller->respond(res);
         }
     }
 }
