@@ -22,5 +22,12 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
     - name: Docker push
       run: docker push anuruddhal/h1_h1_passthrough:v1
-    - name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+    - name: Deploy Kubernetes
+    - uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_NAME }}
+        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+    - run: |
+        kubectl apply --recursive -f ./bal/h1_h1_passthrough/target/kubernetes
+
