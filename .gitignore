@@ -4,9 +4,24 @@
 # Output file
 *.out
 
-#Idea files
-.idea
-*.iml
-
 # Maven Target
 target
+
+# IDEA Files
+.idea/
+*.ipr
+*.iws
+*.iml
+
+
+# MacOS
+*.DS_Store
+
+#Ballerina
+*.jar
+*.balx
+bal/*/kubernetes
+bal/*/docker
+velocity.log*
+*Ballerina.lock
+*Dependencies.toml
