@@ -73,3 +73,25 @@ spec:
     kind: Deployment
     name: h1-h1-passthrou-deployment
   targetCPUUtilizationPercentage: 50
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  labels:
+    region: SL
+  name: h1-h1-passthrough
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: h1-h1-passthrou
+            port:
+              number: 443
+        path: /h1_h1_passthrough
+        pathType: Prefix

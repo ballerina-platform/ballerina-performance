@@ -4,7 +4,7 @@ import ballerina/log;
 listener http:Listener securedEP = new(9090,
     secureSocket = {
         key: {
-            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
+            path: "./security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
@@ -13,7 +13,7 @@ listener http:Listener securedEP = new(9090,
 final http:Client nettyEP = check new("https://netty:8688",
     secureSocket = {
         cert: {
-            path: "${ballerina.home}/bre/security/ballerinaTruststore.p12",
+            path: "./security/ballerinaTruststore.p12",
             password: "ballerina"
         },
         verifyHostName: false

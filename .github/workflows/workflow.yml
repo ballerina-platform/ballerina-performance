@@ -31,11 +31,12 @@ jobs:
     - name: 'Run Kustomize'
       run: |
           pushd ./base && kustomize build > ../gitops/base.yaml && popd
-    - name: Deploy Kubernetes
+    - name: Configure AKS
       uses: azure/aks-set-context@v1
       with:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
-        cluster-name: ${{ env.CLUSTER_NAME }}
-        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+        cluster-name: ${{ secrets.CLUSTER_NAME }}
+        resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
+    - name: Deploy artifacts
       run: |
         kubectl apply --recursive -f ./gitops/base.yaml
