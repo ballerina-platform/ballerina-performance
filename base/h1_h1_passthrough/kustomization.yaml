@@ -1,6 +1,6 @@
 resources:
   - h1_h1_passthrough.yaml
-
+  - ingress.yaml
 patches:
 - path: deployment-patch.yaml
   target:
