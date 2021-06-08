@@ -17,20 +17,24 @@ jobs:
       uses: ballerina-platform/ballerina-action@master
       env:
         CI_BUILD: true
+        WORKING_DIR: "./bal/h1_h1_passthrough"
       with:
         args:
-          build ./bal/h1_h1_passthrough
+          build
     - name: Docker push
       run: docker push anuruddhal/h1_h1_passthrough:latest
-    - name: Copy kustomize
+    - name: Copy artifacts
       run: |
-        cp -a ./bal/h1_h1_passthrough/target/kubernetes/h1_h1_passthrough/ ./base/h1_h1_passthrough
+        ls -ltr
+        cp -a ./bal/h1_h1_passthrough/target/kubernetes/h1_h1_passthrough/. ./base/h1_h1_passthrough/
     - name: 'Install Kustomize'
       run: |
         curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - name: 'Run Kustomize'
       run: |
-          pushd ./base && kustomize build > ../gitops/base.yaml && popd
+          pwd
+          ls -ltr ./base/h1_h1_passthrough
+          kustomize build base > ./gitops/base.yaml
     - name: Configure AKS
       uses: azure/aks-set-context@v1
       with:
