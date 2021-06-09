@@ -1,0 +1,27 @@
+name: Spawn cluster
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: CHECKOUT
+      uses: actions/checkout@v2
+    - name: AZURE LOGIN
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}}
+    - name: Create Cluster
+      env:
+        AZURE_APP_ID: ${{ secrets.AZURE_APP_ID }}
+        AZURE_APP_PASSWORD: ${{ secrets.AZURE_APP_PASSWORD }}
+        RESOURCE_GROUP: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
+      run: |
+        az aks create \
+            --resource-group "${RESOURCE_GROUP}" \
+            --name bal-perf-test \
+            --service-principal "${AZURE_APP_ID}"\
+            --client-secret "${AZURE_APP_PASSWORD}" \
+            --generate-ssh-keys
