@@ -26,3 +26,4 @@ velocity.log*
 *.ballerina
 *Ballerina.lock
 *Dependencies.toml
+*final.yaml
