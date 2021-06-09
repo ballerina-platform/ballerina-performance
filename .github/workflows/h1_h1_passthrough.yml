@@ -1,4 +1,4 @@
-name: Build main branch
+name: h1_h1_passthrough
 
 on:
   workflow_dispatch:
@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TEST_NAME: "h1_h1_passthrough"
+      TEST_ROOT: "tests"
     steps:
     - uses: actions/checkout@v2
     - name: Login to DockerHub
@@ -14,27 +17,25 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
     - name: Ballerina Build
-      uses: ballerina-platform/ballerina-action@master
+      uses: ballerina-platform/ballerina-action@nightly
       env:
         CI_BUILD: true
-        WORKING_DIR: "./bal/h1_h1_passthrough"
+        WORKING_DIR: tests/h1_h1_passthrough
       with:
         args:
           build
     - name: Docker push
-      run: docker push anuruddhal/h1_h1_passthrough:latest
+      run: docker push anuruddhal/${TEST_NAME}:latest
     - name: Copy artifacts
       run: |
         ls -ltr
-        cp -a ./bal/h1_h1_passthrough/target/kubernetes/h1_h1_passthrough/. ./base/h1_h1_passthrough/
+        cp -a ${TEST_ROOT}/${TEST_NAME}/target/kubernetes/${TEST_NAME}/. ${TEST_ROOT}/${TEST_NAME}/deployment/
     - name: 'Install Kustomize'
       run: |
         curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - name: 'Run Kustomize'
       run: |
-          pwd
-          ls -ltr ./base/h1_h1_passthrough
-          kustomize build base > ./gitops/base.yaml
+          kustomize build ${TEST_ROOT}/${TEST_NAME}/deployment > ${TEST_ROOT}/${TEST_NAME}/final.yaml
     - name: Configure AKS
       uses: azure/aks-set-context@v1
       with:
@@ -43,4 +44,4 @@ jobs:
         resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
     - name: Deploy artifacts
       run: |
-        kubectl apply --recursive -f ./gitops/base.yaml
+        kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml

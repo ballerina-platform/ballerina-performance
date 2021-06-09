@@ -20,8 +20,9 @@ target
 #Ballerina
 *.jar
 *.balx
-bal/*/kubernetes
-bal/*/docker
+tests/*/kubernetes
+tests/*/docker
 velocity.log*
+*.ballerina
 *Ballerina.lock
 *Dependencies.toml
