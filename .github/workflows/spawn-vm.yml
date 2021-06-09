@@ -14,13 +14,27 @@ jobs:
       uses: actions/checkout@v2
     - name: Create Workflow Artifacts
       run: |
-        cd  "$GITHUB_WORKFLOW"
-        mkdir worflow-artifacts/        
-        echo "echo Installing World... " > $GITHUB_WORKSPACE/workflow-artifacts/install-world.sh  # You can have your own installation script here
+        echo "starting ls"
+        ls
+        echo "end ls"
+        echo $GITHUB_WORKSPACE
+        echo "pwd"
+        pwd
+        echo "before cd"
+        cd $GITHUB_WORKSPACE
+        mkdir worflow-artifacts
+        echo "after cd creating dir"
+        ls
+        echo "final"
+        echo "echo Installing World... " >> install-world.sh 
+        ls
     - name: Login via Az module
       uses: azure/login@v1
       with:
         creds: ${{secrets.AZURE_CREDENTIALS}}
+    - name: Create VM
+      run: |
+        az provider register -n Microsoft.VirtualMachineImages
     - name: Build and Distribute Custom VM Image      
       uses: azure/build-vm-image@v0
       with:        
