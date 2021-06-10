@@ -31,7 +31,7 @@ jobs:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ secrets.CLUSTER_NAME }}
         resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
-    - name: Deploy artifacts
+    - name: Deploy Niginx
       run: |
         # Create a namespace for your ingress resources
         kubectl create namespace ingress-basic
