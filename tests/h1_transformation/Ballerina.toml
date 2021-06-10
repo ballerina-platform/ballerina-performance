@@ -1,6 +1,6 @@
 [package]
 org = "wso2"
-name = "h1_h1_passthrough"
+name = "h1_transformation"
 version = "0.0.1"
 
 [build-options]
