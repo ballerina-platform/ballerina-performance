@@ -46,4 +46,12 @@ jobs:
             --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
             --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux \
             --set controller.admissionWebhooks.patch.nodeSelector."beta\.kubernetes\.io/os"=linux
-
+    - name: Trigger h1_h1_passthrough test
+      uses: felixp8/dispatch-and-wait@v0.1.0
+      with:
+        owner: anuruddhal
+        repo: ballerina-performance
+        token: ${{ secrets.BALLERINA_BOT_TOKEN }}
+        event_type: h1_h1_passthrough
+        wait_time: 180
+        max_time: 600

@@ -2,7 +2,8 @@ name: h1_h1_passthrough
 
 on:
   workflow_dispatch:
-
+  repository_dispatch:
+    types: [ h1_h1_passthrough ]
 jobs:
   build:
     runs-on: ubuntu-latest
