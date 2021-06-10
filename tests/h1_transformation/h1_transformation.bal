@@ -2,24 +2,24 @@ import ballerina/http;
 import ballerina/log;
 import ballerina/xmldata;
 
-listener http:Listener securedEP = new(9090,
-    secureSocket = {
+listener http:Listener securedEP = new(9090, {
+    secureSocket:  {
         key: {
             path: "./security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
-);
+});
 
-final http:Client nettyEP = check new("https://netty:8688",
-    secureSocket = {
+final http:Client nettyEP = check new("https://netty:8688", {
+    secureSocket: {
         cert: {
             path: "./security/ballerinaTruststore.p12",
             password: "ballerina"
         },
         verifyHostName: false
     }
-);
+});
 
 service /transform on securedEP {
     resource function post .(http:Caller caller, http:Request req) {
