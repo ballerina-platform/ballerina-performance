@@ -17,15 +17,15 @@
 import ballerina/http;
 import ballerina/log;
 
-listener http:Listener securedEP = new(9090,
-    httpVersion = "2.0",
-    secureSocket = {
+listener http:Listener securedEP = new(9090, {
+    httpVersion: "2.0",
+    secureSocket:  {
         key: {
-            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
+            path: "./security/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
-);
+});
 
 final http:Client nettyEP = check new("http://netty:8688");
 
