@@ -6,5 +6,5 @@ spec:
   template:
     spec:
       containers:
-      - name: "h1-transformati-deployment"
+      - name: "h1c-h1c-passthr-deployment"
         imagePullPolicy: Always
