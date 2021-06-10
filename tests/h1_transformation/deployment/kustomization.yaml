@@ -1,5 +1,5 @@
 resources:
-  - h1_h1_passthrough.yaml
+  - h1_trasformation.yaml
   - ingress.yaml
   - netty-backend.yaml
 patches:

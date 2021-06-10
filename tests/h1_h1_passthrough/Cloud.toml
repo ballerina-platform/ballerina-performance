@@ -1,7 +1,6 @@
 [container.image]
 repository= "anuruddhal"
 name="h1_h1_passthrough"
-cmd="CMD java -Xdiag -cp \"h1_h1_passthrough.jar:jars/*\" 'wso2/h1_h1_passthrough/0_0_1/$_init' || cat ballerina-internal.log"
 
 [cloud.deployment]
 min_memory="256Mi"
