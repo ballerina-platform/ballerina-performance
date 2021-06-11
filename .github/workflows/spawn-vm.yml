@@ -12,40 +12,30 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Create Workflow Artifacts
-      run: |
-        echo "starting ls"
-        ls
-        echo "end ls"
-        echo $GITHUB_WORKSPACE
-        echo "pwd"
-        pwd
-        echo "before cd"
-        cd $GITHUB_WORKSPACE
-        mkdir worflow-artifacts
-        echo "after cd creating dir"
-        ls
-        echo "final"
-        echo "echo Installing World... " >> install-world.sh 
-        ls
     - name: Login via Az module
       uses: azure/login@v1
       with:
         creds: ${{secrets.AZURE_CREDENTIALS}}
-    - name: Create VM
-      run: |
-        az provider register -n Microsoft.VirtualMachineImages
     - name: Build and Distribute Custom VM Image      
+      id: imageBuilder
       uses: azure/build-vm-image@v0
       with:        
         resource-group-name: '${{ secrets.CLUSTER_RESOURCE_GROUP }}'
-        location: 'eastus2'
-        managed-identity: 'myImageBuilderIdentity'
+        location: 'eastus'
+        managed-identity: 'bal-perf-identity'
         source-os-type: 'linux'
         source-image-type: 'PlatformImage'
         source-image: Canonical:UbuntuServer:18.04-LTS:latest 
-        customizer-source: ${{ GITHUB.WORKSPACE }}/workflow-artifacts
+        dist-image-tags: 'number:${{ GITHUB.RUN_NUMBER }}'
+        customizer-source: ${{ GITHUB.WORKSPACE }}/scripts
         customizer-script: |
           sudo mkdir /buildArtifacts
-          sudo cp -r /tmp/ /buildArtifacts/
-          sh /buildArtifacts/workflow-artifacts/install-world.sh
+          sudo cp -r /tmp/scripts/ /buildArtifacts/
+          sh /buildArtifacts/scripts/init.sh
+    - name: CREATE VM
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.0.72
+        inlineScript: |
+          az vm create --resource-group "${{ secrets.CLUSTER_RESOURCE_GROUP }}"  --name "app-vm-${{ GITHUB.RUN_NUMBER }}"  --admin-username "${{ secrets.VM_USER }}" --admin-password "${{ secrets.VM_PWD }}" --location  eastus \
+          --image "${{ steps.imageBuilder.outputs.custom-image-uri }}"   
