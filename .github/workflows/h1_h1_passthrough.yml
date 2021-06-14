@@ -48,6 +48,7 @@ jobs:
         kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
     - name: Write K8S cluster ingress to file
       run: |
+        ls
         cd "$GITHUB_WORKFLOW"
         kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}"
         kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}" > ip.txt
