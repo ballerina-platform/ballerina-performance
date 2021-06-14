@@ -14,11 +14,19 @@
 # limitations under the License.
 #
 # ----------------------------------------------------------------------------
-# Installation script for setting up Apache JMeter
+# Installation script for the VM
 # ----------------------------------------------------------------------------
 
+
+if [ "$#" -ne 1 ]
+then
+  echo "First parameter should contain k8s cluster ip"
+  exit 1
+fi
+
+echo "$1"
 sudo apt-get update
 sudo apt-get install openjdk-8-jdk -y
-echo '20.62.233.131 perf.test.com' | sudo tee -a /etc/hosts
+echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 cd /buildArtifacts/scripts
 sudo ./start-jmeter.sh -i /buildArtifacts -d
