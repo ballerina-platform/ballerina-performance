@@ -46,9 +46,6 @@ jobs:
     - name: Deploy artifacts
       run: |
         kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
-
-    - name: Checkout
-      uses: actions/checkout@v2
     - name: Login via Az module
       uses: azure/login@v1
       with:
