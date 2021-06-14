@@ -46,3 +46,32 @@ jobs:
     - name: Deploy artifacts
       run: |
         kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Login via Az module
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}}
+    - name: Build and Distribute Custom VM Image      
+      id: imageBuilder
+      uses: azure/build-vm-image@v0
+      with:        
+        resource-group-name: '${{ secrets.CLUSTER_RESOURCE_GROUP }}'
+        location: 'eastus'
+        managed-identity: 'bal-perf-identity'
+        source-os-type: 'linux'
+        source-image-type: 'PlatformImage'
+        source-image: Canonical:UbuntuServer:18.04-LTS:latest 
+        dist-image-tags: 'number:${{ GITHUB.RUN_NUMBER }}'
+        customizer-source: ${{ GITHUB.WORKSPACE }}/scripts
+        customizer-script: |
+          sudo mkdir /buildArtifacts
+          sudo cp -r /tmp/scripts/ /buildArtifacts/
+          sh /buildArtifacts/scripts/init.sh `kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}"`
+    - name: Create VM Instance
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.0.72
+        inlineScript: |
+          az vm create --resource-group "${{ secrets.CLUSTER_RESOURCE_GROUP }}"  --name "bal-perf-vm-${{ GITHUB.RUN_NUMBER }}"  --admin-username "${{ secrets.VM_USER }}" --admin-password "${{ secrets.VM_PWD }}" --location  eastus \
+          --image "${{ steps.imageBuilder.outputs.custom-image-uri }}"   
