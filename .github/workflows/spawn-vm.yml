@@ -31,7 +31,7 @@ jobs:
         customizer-script: |
           sudo mkdir /buildArtifacts
           sudo cp -r /tmp/scripts/ /buildArtifacts/
-          sh /buildArtifacts/scripts/init.sh `kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}"`
+          sh /buildArtifacts/scripts/init.sh 112.134.130.126
     - name: CREATE VM
       uses: azure/CLI@v1
       with:
