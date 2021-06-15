@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TEST_NAME: "h1_h1_passthrough"
+      PAYLOAD_SIZE: "1024"
       TEST_ROOT: "tests"
     steps:
     - uses: actions/checkout@v2
@@ -70,6 +71,8 @@ jobs:
           sudo mkdir /buildArtifacts
           sudo cp -r /tmp/scripts/ /buildArtifacts/
           sh /buildArtifacts/scripts/init.sh `cat /buildArtifacts/scripts/ip.txt`
+          cd /buildArtifacts/tests/${TEST_NAME}/scripts
+
     - name: Create VM Instance
       uses: azure/CLI@v1
       with:
