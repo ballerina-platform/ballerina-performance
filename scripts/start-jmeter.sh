@@ -187,5 +187,5 @@ done
 # Set cmdrunner version in JMeterPluginsCMD.sh
 sed -i "s/cmdrunner-.*\.jar/$cmdrunner_jar/g" $extracted_dirname/bin/JMeterPluginsCMD.sh
 
-export PATH=$PATH:/buildArtifacts/apache-jmeter-4.0/bin/"
-echo 'export PATH=$PATH:/buildArtifacts/apache-jmeter-4.0/bin/' >> ~/.bashrc
+# export PATH=$PATH:/buildArtifacts/apache-jmeter-4.0/bin/"
+# echo 'export PATH=$PATH:/buildArtifacts/apache-jmeter-4.0/bin/' >> ~/.bashrc
