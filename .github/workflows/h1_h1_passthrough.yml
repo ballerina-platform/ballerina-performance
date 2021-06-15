@@ -71,7 +71,6 @@ jobs:
           sudo mkdir /buildArtifacts
           sudo cp -r /tmp/scripts/ /buildArtifacts/
           sh /buildArtifacts/scripts/init.sh `cat /buildArtifacts/scripts/ip.txt`
-          cd /buildArtifacts/tests/${TEST_NAME}/scripts
 
     - name: Create VM Instance
       uses: azure/CLI@v1
