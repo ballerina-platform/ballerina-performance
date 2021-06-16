@@ -30,5 +30,6 @@ echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 echo '#!/bin/sh' | sudo tee -a /etc/profile.d/10-perf-vm.sh
 echo 'export PATH=$PATH:/artifacts/utils/jtl-splitter/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
 echo 'export PATH=$PATH:/artifacts/utils/payloads/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
-cd /artifacts/scripts
-sudo ./start-jmeter.sh -i /artifacts -d
+chmod -R 777 /artifacts
+(cd /artifacts/scripts sudo; ./start-jmeter.sh -i /artifacts -d)
+(cd /artifacts/tests/$2/scripts/; ./run.sh $2)

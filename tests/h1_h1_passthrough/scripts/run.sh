@@ -18,5 +18,5 @@
 # ----------------------------------------------------------------------------
 
 generate-payloads.sh -p array -s 1024
-jmeter -n -t /artifacts/tests/h1_h1_passthrough/scripts/http-post-request.jmx -l /artifacts/tests/h1_h1_passthrough/results/original.jtl -Jusers=60 -Jduration=900 -Jhost=perf.test.com -Jport=443 -Jprotocol=https -Jpath=passthrough -Jresponse_size=1024 -Jpayload="echo "$(pwd)"'/1024B.json'"
-(cd /artifacts/tests/h1_h1_passthrough/results/; jtl-splitter.sh -- -f /artifacts/tests/h1_h1_passthrough/results/original.jtl -t 300 -u SECONDS -s)
+jmeter -n -t /artifacts/tests/$1/scripts/http-post-request.jmx -l /artifacts/tests/$1/results/original.jtl -Jusers=60 -Jduration=900 -Jhost=perf.test.com -Jport=443 -Jprotocol=https -Jpath=passthrough -Jresponse_size=1024 -Jpayload="$(pwd)"'/1024B.json'
+(cd /artifacts/tests/$1/results/; jtl-splitter.sh -- -f /artifacts/tests/$1/results/original.jtl -t 300 -u SECONDS -s)
