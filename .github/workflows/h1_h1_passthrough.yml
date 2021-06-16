@@ -51,6 +51,11 @@ jobs:
       run: |
         kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}" > $GITHUB_WORKSPACE/scripts/ip.txt
         cat $GITHUB_WORKSPACE/scripts/ip.txt
+        cd $GITHUB_WORKSPACE
+        mkdir artifacts
+        cp -r scripts/ artifacts
+        cp -r tests/ artifacts
+        cp -r utils/ artifacts
     - name: Login via Az module
       uses: azure/login@v1
       with:
@@ -66,10 +71,11 @@ jobs:
         source-image-type: 'PlatformImage'
         source-image: Canonical:UbuntuServer:18.04-LTS:latest
         dist-image-tags: 'number:${{ GITHUB.RUN_NUMBER }}'
-        customizer-source: ${{ GITHUB.WORKSPACE }}
+        customizer-source: ${{ GITHUB.WORKSPACE }}/artifacts
         customizer-script: |
           sudo mkdir /buildArtifacts
-          sudo cp -r /tmp/ /buildArtifacts/
+          sudo cp -r /tmp/artifacts/ /buildArtifacts/
+
 
     - name: Create VM Instance
       uses: azure/CLI@v1
