@@ -18,14 +18,17 @@
 # ----------------------------------------------------------------------------
 
 
-if [ "$#" -ne 1 ]
+if [ "$#" -ne 2 ]
 then
-  echo "First parameter should contain k8s cluster ip"
+  echo "First parameter should contain k8s cluster ip and second paramter should contain the sample folder name"
   exit 1
 fi
 
 echo "$1"
 sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
+echo '#!/bin/sh' | sudo tee -a /etc/profile.d/10-perf-vm.sh
+echo 'export PATH=$PATH:/artifacts/utils/jtl-splitter/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
+echo 'export PATH=$PATH:/artifacts/utils/payloads/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
 cd /artifacts/scripts
 sudo ./start-jmeter.sh -i /artifacts -d

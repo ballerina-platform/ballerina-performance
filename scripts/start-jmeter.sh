@@ -188,4 +188,4 @@ done
 sed -i "s/cmdrunner-.*\.jar/$cmdrunner_jar/g" $extracted_dirname/bin/JMeterPluginsCMD.sh
 
 export PATH=$PATH:/artifacts/apache-jmeter-4.0/bin/
-echo 'export PATH=$PATH:/artifacts/apache-jmeter-4.0/bin/' >> ~/.bashrc
+echo 'export PATH=$PATH:/artifacts/apache-jmeter-4.0/bin/' | sudo tee -a /etc/profile.d/10-perf-vm.sh

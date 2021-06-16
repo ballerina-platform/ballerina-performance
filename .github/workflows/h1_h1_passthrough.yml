@@ -50,6 +50,7 @@ jobs:
     - name: Write K8S cluster ingress to file
       run: |
         kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}" > $GITHUB_WORKSPACE/scripts/ip.txt
+        echo ${TEST_NAME} > $GITHUB_WORKSPACE/scripts/scenario.txt
         cat $GITHUB_WORKSPACE/scripts/ip.txt
         cd $GITHUB_WORKSPACE
         mkdir artifacts
@@ -74,7 +75,7 @@ jobs:
         customizer-source: ${{ GITHUB.WORKSPACE }}/artifacts
         customizer-script: |
           sudo cp -r /tmp/artifacts/ /
-          sh /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt`
+          sh /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt` `cat /artifacts/scripts/scenario.txt.txt` 
 
     - name: Create VM Instance
       uses: azure/CLI@v1
