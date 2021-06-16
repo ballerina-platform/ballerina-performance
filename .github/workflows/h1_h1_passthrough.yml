@@ -66,11 +66,10 @@ jobs:
         source-image-type: 'PlatformImage'
         source-image: Canonical:UbuntuServer:18.04-LTS:latest
         dist-image-tags: 'number:${{ GITHUB.RUN_NUMBER }}'
-        customizer-source: ${{ GITHUB.WORKSPACE }}/scripts
+        customizer-source: ${{ GITHUB.WORKSPACE }}
         customizer-script: |
           sudo mkdir /buildArtifacts
-          sudo cp -r /tmp/scripts/ /buildArtifacts/
-          sh /buildArtifacts/scripts/init.sh `cat /buildArtifacts/scripts/ip.txt`
+          sudo cp -r /tmp/ /buildArtifacts/
 
     - name: Create VM Instance
       uses: azure/CLI@v1
