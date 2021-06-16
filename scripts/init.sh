@@ -27,5 +27,5 @@ fi
 echo "$1"
 sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
-cd /buildArtifacts/scripts
-sudo ./start-jmeter.sh -i /buildArtifacts -d
+cd /artifacts/scripts
+sudo ./start-jmeter.sh -i /artifacts -d

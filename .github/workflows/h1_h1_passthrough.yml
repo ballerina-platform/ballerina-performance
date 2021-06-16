@@ -73,9 +73,8 @@ jobs:
         dist-image-tags: 'number:${{ GITHUB.RUN_NUMBER }}'
         customizer-source: ${{ GITHUB.WORKSPACE }}/artifacts
         customizer-script: |
-          sudo mkdir /buildArtifacts
-          sudo cp -r /tmp/artifacts/ /buildArtifacts/
-
+          sudo cp -r /tmp/artifacts/ /
+          sh /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt`
 
     - name: Create VM Instance
       uses: azure/CLI@v1

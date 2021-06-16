@@ -17,6 +17,6 @@
 # Execusion script for ballerina performance tests
 # ----------------------------------------------------------------------------
 
-./../../../utils/payloads/generate-payloads.sh -p array -s 1024
-jmeter -n -t /home/anjana/repos/ballerina-performance/distribution/scripts/jmeter/http-post-request.jmx -l results.jtl -Jusers=60 -Jduration=900 -Jhost=perf.test.com -Jport=443 -Jprotocol=https -Jpath=passthrough -Jresponse_size=1024 -Jpayload="echo "$(pwd)"'/1024B.json'"
-./../../../utils/jtl-splitter/jtl-splitter.sh -- -f results.jtl -d -t 300 -u SECONDS -s
+./artifacts/utils/payloads/generate-payloads.sh -p array -s 1024
+jmeter -n -t /artifacts/tests/h1_h1_passthrough/scripts/http-post-request.jmx -l /artifacts/tests/h1_h1_passthrough/results/original.jtl -Jusers=60 -Jduration=900 -Jhost=perf.test.com -Jport=443 -Jprotocol=https -Jpath=passthrough -Jresponse_size=1024 -Jpayload="echo "$(pwd)"'/1024B.json'"
+(cd /artifacts/tests/h1_h1_passthrough/results/; ./artifacts/utils/jtl-splitter/jtl-splitter.sh -- -f /artifacts/tests/h1_h1_passthrough/results/original.jtl -t 300 -u SECONDS -s)
