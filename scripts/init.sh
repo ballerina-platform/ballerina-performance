@@ -29,7 +29,9 @@ sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 echo '#!/bin/sh' | sudo tee -a /etc/profile.d/10-perf-vm.sh
 echo 'export PATH=$PATH:/artifacts/utils/jtl-splitter/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
+alias sudosplit='sudo -E env "PATH=$PATH" jtl-splitter.sh'
 echo 'export PATH=$PATH:/artifacts/utils/payloads/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
-chmod -R 777 /artifacts
+alias sudopayload='sudo -E env "PATH=$PATH" generate-payloads.sh'
 (cd /artifacts/scripts sudo; ./start-jmeter.sh -i /artifacts -d)
+chmod -R 777 /artifacts
 (cd /artifacts/tests/$2/scripts/; ./run.sh $2)
