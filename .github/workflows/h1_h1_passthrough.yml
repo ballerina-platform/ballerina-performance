@@ -75,7 +75,7 @@ jobs:
         customizer-source: ${{ GITHUB.WORKSPACE }}/artifacts
         customizer-script: |
           sudo cp -r /tmp/artifacts/ /
-          sh /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt` `cat /artifacts/scripts/scenario.txt.txt` 
+          sh /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt` `cat /artifacts/scripts/scenario.txt` 
 
     - name: Create VM Instance
       uses: azure/CLI@v1
