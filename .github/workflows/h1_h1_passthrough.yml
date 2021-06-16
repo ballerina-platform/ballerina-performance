@@ -75,7 +75,7 @@ jobs:
         customizer-source: ${{ GITHUB.WORKSPACE }}/artifacts
         customizer-script: |
           sudo cp -r /tmp/artifacts/ /
-          sh /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt` `cat /artifacts/scripts/scenario.txt` 
+          bash /artifacts/scripts/init.sh `cat /artifacts/scripts/ip.txt` `cat /artifacts/scripts/scenario.txt`
 
     - name: Create VM Instance
       uses: azure/CLI@v1
@@ -84,3 +84,7 @@ jobs:
         inlineScript: |
           az vm create --resource-group "${{ secrets.CLUSTER_RESOURCE_GROUP }}"  --name "bal-perf-vm-${{ GITHUB.RUN_NUMBER }}"  --admin-username "${{ secrets.VM_USER }}" --admin-password "${{ secrets.VM_PWD }}" --location  eastus \
           --image "${{ steps.imageBuilder.outputs.custom-image-uri }}"
+
+    - name: Undeploy Kubernetes artifacts
+      run: |
+        kubectl delete -f ${TEST_ROOT}/${TEST_NAME}/final.yaml

@@ -16,8 +16,7 @@
 # ----------------------------------------------------------------------------
 # Installation script for the VM
 # ----------------------------------------------------------------------------
-
-
+set -e
 if [ "$#" -ne 2 ]
 then
   echo "First parameter should contain k8s cluster ip and second paramter should contain the sample folder name"
@@ -27,11 +26,7 @@ fi
 echo "$1"
 sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
-echo '#!/bin/sh' | sudo tee -a /etc/profile.d/10-perf-vm.sh
-echo 'export PATH=$PATH:/artifacts/utils/jtl-splitter/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
-alias sudosplit='sudo -E env "PATH=$PATH" jtl-splitter.sh'
-echo 'export PATH=$PATH:/artifacts/utils/payloads/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
-alias sudopayload='sudo -E env "PATH=$PATH" generate-payloads.sh'
-(cd /artifacts/scripts sudo; ./start-jmeter.sh -i /artifacts -d)
+(cd /artifacts/scripts/; ./start-jmeter.sh -i /artifacts -d)
 chmod -R 777 /artifacts
 (cd /artifacts/tests/$2/scripts/; ./run.sh $2)
+(cd /artifacts/tests/$2/scripts/; ./artifacts/apache-jmeter-4.0/bin/JMeterPluginsCMD.sh --generate-csv summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport)

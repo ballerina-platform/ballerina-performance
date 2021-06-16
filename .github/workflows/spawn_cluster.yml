@@ -46,6 +46,10 @@ jobs:
             --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
             --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux \
             --set controller.admissionWebhooks.patch.nodeSelector."beta\.kubernetes\.io/os"=linux
+        # Wait for ingress ip
+        kubectl get service nginx-ingress-ingress-nginx-controller --namespace ingress-basic -w  \
+        -o 'go-template={{with .status.loadBalancer.ingress}}{{range .}}{{.ip}}{{"\n"}}{{end}}{{.err}}{{end}}' 2>/dev/null \
+        | head -n1
     - name: Trigger h1_h1_passthrough test
       uses: felixp8/dispatch-and-wait@v0.1.0
       with:
@@ -53,5 +57,5 @@ jobs:
         repo: ballerina-performance
         token: ${{ secrets.BALLERINA_BOT_TOKEN }}
         event_type: h1_h1_passthrough
-        wait_time: 180
-        max_time: 600
+        wait_time: 1380
+        max_time: 1800
