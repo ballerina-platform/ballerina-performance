@@ -26,9 +26,9 @@ fi
 echo "$1"
 echo "$2"
 sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
-echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 (cd /artifacts/scripts/; ./start-jmeter.sh -i /artifacts -d)
 chmod -R 777 /artifacts
+echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 (cd /artifacts/tests/"${2}"/scripts/; ./run.sh "${2}")
 (cd /artifacts/tests/"${2}"/results/; /artifacts/utils/jtl-splitter/jtl-splitter.sh -- -f /artifacts/tests/"${2}"/results/original.jtl -t 300 -u SECONDS -s)
 ls -ltr /artifacts/tests/"${2}"/results/
