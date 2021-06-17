@@ -11,6 +11,7 @@ jobs:
       TEST_NAME: "h1_h1_passthrough"
       PAYLOAD_SIZE: "1024"
       TEST_ROOT: "tests"
+      IP: "20.62.176.2"
     steps:
     - uses: actions/checkout@v2
 #    - name: Login to DockerHub
@@ -44,9 +45,9 @@ jobs:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ secrets.CLUSTER_NAME }}
         resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
-#    - name: Deploy artifacts
-#      run: |
-#        kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
+   - name: Deploy artifacts
+     run: |
+       kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
     - name: Login via Az module
       uses: azure/login@v1
       with:
@@ -66,7 +67,8 @@ jobs:
         host: ${{ steps.vminstance.outputs.ip-address }}
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PWD }}
-        script: execute-tests.sh $(kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}") ${TEST_NAME}
+        envs: IP
+        script: execute-tests.sh $IP ${TEST_NAME}
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
 #        kubectl delete -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
