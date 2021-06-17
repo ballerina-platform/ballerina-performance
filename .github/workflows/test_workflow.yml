@@ -10,14 +10,19 @@ jobs:
     env:
       TEST_NAME: "h1_h1_passthrough"
     steps:
+    - name: Write
+      id: write
+      run: |
+        echo "::set-output name=path::${TEST_NAME}"
     - name: Execute performance tests
       uses: appleboy/ssh-action@master
       env: 
-        SCENARIO_NAME: "${TEST_NAME}"
+        SCENARIO_NAME: ${{ steps.write.outputs.path }}
       with:
         host: '52.168.161.56'
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PWD }}
         envs: SCENARIO_NAME
         script: |
+          echo ${TEST_NAME}
           echo "this is $SCENARIO_NAME"
