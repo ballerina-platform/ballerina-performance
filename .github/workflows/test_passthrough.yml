@@ -59,6 +59,7 @@ jobs:
           az vm create --resource-group "${{ secrets.CLUSTER_RESOURCE_GROUP }}"  --name "bal-perf-vm-${{ GITHUB.RUN_NUMBER }}"  --admin-username "${{ secrets.VM_USER }}" --admin-password "${{ secrets.VM_PWD }}" --location  eastus \
           --image "mi_1623931610144"
           echo "::set-output name=ip-address::$(az vm show -d -g "${{ secrets.CLUSTER_RESOURCE_GROUP }}" -n "bal-perf-vm-${{ GITHUB.RUN_NUMBER }}" --query publicIps -o tsv)"
+          echo "${{ steps.vminstance.outputs.ip-address }}"
     - name: Execute performance tests
       uses: appleboy/ssh-action@master
       with:
