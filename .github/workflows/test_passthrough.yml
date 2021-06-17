@@ -64,15 +64,16 @@ jobs:
       uses: appleboy/ssh-action@master
       env: 
         IP: kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}"
+        SCENARIO_NAME: ${TEST_NAME}
       with:
         host: ${{ steps.vminstance.outputs.ip-address }}
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PWD }}
-        envs: IP
+        envs: IP,SCENARIO_NAME
         script: |
           touch hello.txt
           echo "IP is $IP" >> hello.txt
-          echo "umm ${TEST_NAME}" >> hello.txt
+          echo "umm $SCENARIO_NAME" >> hello.txt
 #          # script: execute-tests.sh $IP ${TEST_NAME}
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
