@@ -52,13 +52,16 @@ jobs:
       with:
         creds: ${{secrets.AZURE_CREDENTIALS}}
     - name: Create VM Instance
+      id: vminstance
       uses: azure/CLI@v1
       with:
         azcliversion: 2.0.72
         inlineScript: |
           az vm create --resource-group "${{ secrets.CLUSTER_RESOURCE_GROUP }}"  --name "test-bal-perf-vm-${{ GITHUB.RUN_NUMBER }}"  --admin-username "${{ secrets.VM_USER }}" --admin-password "${{ secrets.VM_PWD }}" --location  eastus \
           --image "mi_1623913725906"
-
+    - name: Test output
+      run: |
+        echo ${{ steps.vminstance.outputs.publicIpAddress }}
 
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
