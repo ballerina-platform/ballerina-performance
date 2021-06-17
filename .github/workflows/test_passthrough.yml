@@ -63,8 +63,8 @@ jobs:
     - name: Execute performance tests
       uses: appleboy/ssh-action@master
       env: 
-        IP: kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}"
-        SCENARIO_NAME: ${TEST_NAME}
+        IP: 'kubectl get ing h1-h1-passthrough -o "jsonpath={.status.loadBalancer.ingress[0].ip}"'
+        SCENARIO_NAME: "${TEST_NAME}"
       with:
         host: ${{ steps.vminstance.outputs.ip-address }}
         username: ${{ secrets.VM_USER }}
