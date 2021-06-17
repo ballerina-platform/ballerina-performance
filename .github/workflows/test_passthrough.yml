@@ -32,7 +32,7 @@ jobs:
         host: ${{ steps.vminstance.outputs.ip-address }}
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PWD }}
-        script: pwd
+        script: mkdir test
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
 #        kubectl delete -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
