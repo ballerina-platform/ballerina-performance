@@ -1,0 +1,23 @@
+name: test_h1_h1_passthrough
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [ test_h1_h1_passthrough ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST_NAME: "h1_h1_passthrough"
+    steps:
+    - name: Execute performance tests
+      uses: appleboy/ssh-action@master
+      env: 
+        SCENARIO_NAME: "${TEST_NAME}"
+      with:
+        host: '52.168.161.56'
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PWD }}
+        envs: SCENARIO_NAME
+        script: |
+          echo "this is $SCENARIO_NAME"
