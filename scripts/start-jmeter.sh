@@ -179,7 +179,7 @@ else
     $PluginsManagerCMD install "$upgrades"
 fi
 
-for plugin in ${plugins[@]}; do
+for plugin in "${plugins[@]}"; do
     echo "Installing $plugin plugin"
     $PluginsManagerCMD install $plugin
 done

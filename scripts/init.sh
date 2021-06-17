@@ -19,14 +19,17 @@
 set -e
 if [ "$#" -ne 2 ]
 then
-  echo "First parameter should contain k8s cluster ip and second paramter should contain the sample folder name"
+  echo "First parameter should contain k8s cluster ip and second parameter should contain the sample folder name"
   exit 1
 fi
 
 echo "$1"
+echo "$2"
 sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 (cd /artifacts/scripts/; ./start-jmeter.sh -i /artifacts -d)
 chmod -R 777 /artifacts
-(cd /artifacts/tests/$2/scripts/; ./run.sh $2)
-(cd /artifacts/tests/$2/scripts/; ./artifacts/apache-jmeter-4.0/bin/JMeterPluginsCMD.sh --generate-csv summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport)
+(cd /artifacts/tests/"${2}"/scripts/; ./run.sh "${2}")
+(cd /artifacts/tests/"${2}"/results/; /artifacts/utils/jtl-splitter/jtl-splitter.sh -- -f /artifacts/tests/"${2}"/results/original.jtl -t 300 -u SECONDS -s)
+ls -ltr /artifacts/tests/"${2}"/results/
+(cd /artifacts/tests/"${2}"/results/; /artifacts/apache-jmeter-4.0/bin/JMeterPluginsCMD.sh --generate-csv summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport)
