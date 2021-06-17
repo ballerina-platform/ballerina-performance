@@ -27,9 +27,12 @@ jobs:
           --image "mi_1623913725906"
           echo "::set-output name=ip-address::$(az vm show -d -g "${{ secrets.CLUSTER_RESOURCE_GROUP }}" -n "test-bal-perf-vm-${{ GITHUB.RUN_NUMBER }}" --query publicIps -o tsv)"
     - name: Test output
-      run: |
-        echo ${{ steps.vminstance.outputs.ip-address }}
-        echo "${{ steps.vminstance.outputs.ip-address }}"
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ steps.vminstance.outputs.ip-address }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PWD }}
+        script: pwd
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
 #        kubectl delete -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
