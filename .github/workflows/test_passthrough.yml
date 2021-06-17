@@ -44,9 +44,9 @@ jobs:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ secrets.CLUSTER_NAME }}
         resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
-   - name: Deploy artifacts
-     run: |
-       kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
+    # - name: Deploy artifacts
+    #   run: |
+    #     kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
     - name: Login via Az module
       uses: azure/login@v1
       with:
@@ -69,7 +69,10 @@ jobs:
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PWD }}
         envs: IP
-        script: execute-tests.sh $IP ${TEST_NAME}
+        script: |
+          mkdir $IP
+          mkdir ${TEST_NAME}
+#          # script: execute-tests.sh $IP ${TEST_NAME}
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
 #        kubectl delete -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
