@@ -14,22 +14,13 @@
 # limitations under the License.
 #
 # ----------------------------------------------------------------------------
-# Installation script for the VM
+# Running the Load Test
 # ----------------------------------------------------------------------------
 set -e
-if [ "$#" -ne 2 ]
-then
-  echo "First parameter should contain k8s cluster ip and second parameter should contain the sample folder name"
-  exit 1
-fi
 
-echo "$1"
-echo "$2"
-sudo apt-get update && sudo apt-get install openjdk-8-jdk -y
-(cd /artifacts/scripts/; ./start-jmeter.sh -i /artifacts -d)
-chmod -R 777 /artifacts
+(cd ~/; git clone https://github.com/anuruddhal/ballerina-performance)
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
-(cd /artifacts/tests/"${2}"/scripts/; ./run.sh "${2}")
-(cd /artifacts/tests/"${2}"/results/; /artifacts/utils/jtl-splitter/jtl-splitter.sh -- -f /artifacts/tests/"${2}"/results/original.jtl -t 300 -u SECONDS -s)
-ls -ltr /artifacts/tests/"${2}"/results/
-(cd /artifacts/tests/"${2}"/results/; /artifacts/apache-jmeter-4.0/bin/JMeterPluginsCMD.sh --generate-csv summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport)
+(cd ~/ballerina-performance/tests/"${2}"/scripts/; ./run.sh "${2}")
+(cd ~/ballerina-performance/tests/"${2}"/results/; jtl-splitter.sh -- -f ~/ballerina-performance/tests/"${2}"/results/original.jtl -t 300 -u SECONDS -s)
+ls -ltr ~/ballerina-performance/tests/"${2}"/results/
+(cd ~/ballerina-performance/tests/"${2}"/results/; JMeterPluginsCMD.sh --generate-csv summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport)

@@ -24,3 +24,4 @@ echo 'export PATH=$PATH:/base-image/utils/jtl-splitter/' | sudo tee -a /etc/prof
 echo 'export PATH=$PATH:/base-image/utils/payloads/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
 (cd /base-image/; ./configure-jmeter.sh -i /base-image -d)
 chmod -R 777 /base-image
+echo 'export PATH=$PATH:/base-image/' | sudo tee -a /etc/profile.d/10-perf-vm.sh
