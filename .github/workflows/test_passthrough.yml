@@ -70,8 +70,9 @@ jobs:
         password: ${{ secrets.VM_PWD }}
         envs: IP
         script: |
-          mkdir $IP
-          mkdir ${TEST_NAME}
+          touch hello.txt
+          echo "IP is $IP" >> hello.txt
+          echo "umm ${TEST_NAME}" >> hello.txt
 #          # script: execute-tests.sh $IP ${TEST_NAME}
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
