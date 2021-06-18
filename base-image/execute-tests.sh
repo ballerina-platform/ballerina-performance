@@ -24,13 +24,25 @@ set -e
 )
 echo "$1 perf.test.com" | sudo tee -a /etc/hosts
 
+echo "--------Running test ${2}--------"
 pushd ~/ballerina-performance/tests/"${2}"/scripts/
 ./run.sh "${2}"
 popd
+echo "--------End test--------"
 
+echo "--------Processing Results--------"
 pushd ~/ballerina-performance/tests/"${2}"/results/
+echo "--------Splitting Results--------"
 jtl-splitter.sh -- -f original.jtl -t 300 -u SECONDS -s
 ls -ltr
+echo "--------Splitting Completed--------"
+
+echo "--------Generating CSV--------"
 JMeterPluginsCMD.sh --generate-csv summary.csv --input-jtl original-measurement.jtl --plugin-type AggregateReport
-create_csv.sh summary.csv ~/ballerina-performance/summary/"${2}".csv
+echo "--------CSV generated--------"
+
+echo "--------Merge csv--------"
+create-csv.sh summary.csv ~/ballerina-performance/summary/"${2}".csv
+echo "--------CSV merged--------"
 popd
+echo "--------Results processed--------"
