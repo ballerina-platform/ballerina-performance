@@ -44,9 +44,9 @@ jobs:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ secrets.CLUSTER_NAME }}
         resource-group: ${{ secrets.CLUSTER_RESOURCE_GROUP }}
-    # - name: Deploy artifacts
-    #   run: |
-    #     kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
+    - name: Deploy artifacts
+      run: |
+        kubectl apply -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
     - name: Login via Az module
       uses: azure/login@v1
       with:
