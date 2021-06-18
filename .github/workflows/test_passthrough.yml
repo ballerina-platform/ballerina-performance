@@ -75,7 +75,9 @@ jobs:
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PWD }}
         envs: IP,SCENARIO_NAME
-        script: execute-tests.sh $IP $SCENARIO_NAME
+        script: |
+          source /etc/profile.d/10-perf-vm.sh
+          execute-tests.sh $IP $SCENARIO_NAME
 #    - name: Undeploy Kubernetes artifacts
 #      run: |
 #        kubectl delete -f ${TEST_ROOT}/${TEST_NAME}/final.yaml
