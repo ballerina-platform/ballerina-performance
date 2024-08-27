@@ -1,9 +1,25 @@
+// Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 import ballerina/http;
 
 configurable string epKeyPath = ?;
 configurable string epKeyPassword = ?;
 
-type Item record {|
+type Order record {|
     string symbol;
     string buyerID;
     float price;
@@ -13,9 +29,18 @@ type Item record {|
 type OrderItem record {|
     string symbol;
     string purchaser;
-    float unitPrice;
+    int roundedPrice;
     int quantity;
     float totalCost;
+|};
+
+type Invoice record {|
+    Order[] 'order;
+|};
+
+type Request record {|
+    string size;
+    Invoice payload;
 |};
 
 listener http:Listener securedEP = new (9090,
@@ -27,7 +52,7 @@ listener http:Listener securedEP = new (9090,
     }
 );
 
-final http:Client nettyEP = check new ("https://netty:8688",
+final http:Client nettyEP = check new ("netty:8688",
     secureSocket = {
         cert: {
             path: epKeyPath,
@@ -38,18 +63,18 @@ final http:Client nettyEP = check new ("https://netty:8688",
 );
 
 service /dataMapping on securedEP {
-    resource function post .(@http:Payload json data) returns json|error? {
-        json 'order = check data.payload.'order;
-        Item[] items = check 'order.fromJsonWithType();
-        OrderItem[] orderItems = items.'map(item => transform(item));
-        return check nettyEP->/'service/EchoService.post(orderItems);
+    resource function post .(Request request) returns json|error? {
+        Order[] orders = request.payload.'order;
+        OrderItem[] orderItems = from Order 'order in orders
+            select transform('order);
+        return nettyEP->/'service/EchoService.post(orderItems);
     }
 }
 
-function transform(Item item) returns OrderItem => {
-    symbol: item.symbol,
-    purchaser: item.buyerID,
-    unitPrice: item.price,
-    quantity: item.volume,
-    totalCost: item.price * item.volume
+function transform(Order 'order) returns OrderItem => {
+    symbol: 'order.symbol,
+    purchaser: 'order.buyerID,
+    quantity: 'order.volume * 2,
+    totalCost: 'order.price * 'order.volume,
+    roundedPrice: <int>'order.price
 };

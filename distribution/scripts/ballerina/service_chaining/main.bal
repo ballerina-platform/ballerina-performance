@@ -1,9 +1,20 @@
-import ballerina/http;
+// Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-type Person record {|
-    string name;
-    int age;
-|};
+import ballerina/http;
 
 type Response record {|
     json w1;
@@ -22,7 +33,7 @@ listener http:Listener securedEP = new (9090,
     }
 );
 
-final http:Client nettyEP = check new ("https://netty:8688",
+final http:Client nettyEP = check new ("netty:8688",
     secureSocket = {
         cert: {
             path: epKeyPath,
@@ -32,15 +43,11 @@ final http:Client nettyEP = check new ("https://netty:8688",
     }
 );
 
-function convert(json|error data) returns json {
-    if data is error {
-        return data.message().toJson();
-    }
-    return data;
-}
+function convert(json|error data) returns json =>
+    data is error ? data.message() : data;
 
 service /serviceChaining on securedEP {
-    resource function post .(@http:Payload json payload) returns json {
+    resource function post .(@http:Payload readonly & json payload) returns json {
         worker w1 {
             json|error response1 = nettyEP->/'service/EchoService.post(payload);
             convert(response1) -> function;
