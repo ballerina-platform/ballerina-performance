@@ -40,9 +40,9 @@ final http:Client nettyEP = check new ("netty:8688",
 );
 
 service /jsonToXml on securedEP {
-    resource function post .(@http:Payload json data) returns xml?|error {
+    resource function post .(@http:Payload json data) returns xml|error {
         json payload = check data.payload;
-        xml? xmlPayload = check xmldata:fromJson(payload);
+        xml xmlPayload = check xmldata:fromJson(payload);
         return nettyEP->/'service/EchoService.post(xmlPayload);
     }
 }
