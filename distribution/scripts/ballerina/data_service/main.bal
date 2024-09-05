@@ -1,5 +1,4 @@
 import ballerina/http;
-import ballerina/log;
 import ballerina/sql;
 import ballerinax/mysql;
 import ballerinax/mysql.driver as _;
@@ -55,7 +54,7 @@ final mysql:Client dbClient = check new (
 
 service /'orders on securedEP {
 
-    isolated resource function post .(Request request) returns int|error? {
+    resource function post .(Request request) returns int|error? {
         sql:ParameterizedQuery[] insertQueries = from Order 'order in request.payload.'order
             select `INSERT INTO Orders (symbol, buyerID, price, volume)
             VALUES (${'order.symbol}, ${'order.buyerID}, ${'order.price}, ${'order.volume})`;
@@ -67,15 +66,14 @@ service /'orders on securedEP {
         return error("Unable to obtain last insert ID");
     }
 
-    isolated resource function get [int id]() returns Order|error? {
-        log:printInfo(id.toString());
+    resource function get [int id]() returns Order|error? {
         DBOrder dbOrder = check dbClient->queryRow(
             `SELECT * FROM Orders WHERE id = ${id}`
         );
         return convertDBOrderToOrder(dbOrder);
     }
 
-    isolated resource function get .() returns Order[]|error? {
+    resource function get .() returns Order[]|error? {
         Order[] orders = [];
         stream<DBOrder, error?> resultStream = dbClient->query(
             `SELECT * FROM Orders`
@@ -84,11 +82,10 @@ service /'orders on securedEP {
             do {
                 orders.push(convertDBOrderToOrder(dbOrder));
             };
-        check resultStream.close();
         return orders;
     }
 
-    isolated resource function put [int id](Order 'order) returns int|error? {
+    resource function put [int id](Order 'order) returns int|error? {
         sql:ExecutionResult result = check dbClient->execute(`
             UPDATE Orders SET
                 symbol = ${'order.symbol}, 
@@ -104,7 +101,7 @@ service /'orders on securedEP {
         return error("Unable to obtain affectedRowCount");
     }
 
-    isolated resource function delete [int id]() returns int|error? {
+    resource function delete [int id]() returns int|error? {
         sql:ExecutionResult result = check dbClient->execute(`
             DELETE FROM Orders WHERE id = ${id}
         `);
@@ -117,7 +114,7 @@ service /'orders on securedEP {
 
 }
 
-isolated function convertDBOrderToOrder(DBOrder dbOrder) returns Order =>
+function convertDBOrderToOrder(DBOrder dbOrder) returns Order =>
     {
     symbol: dbOrder.symbol,
     buyerID: dbOrder.buyerID,

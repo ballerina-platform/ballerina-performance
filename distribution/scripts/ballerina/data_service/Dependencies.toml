@@ -203,9 +203,6 @@ dependencies = [
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "observe"}
 ]
-modules = [
-	{org = "ballerina", packageName = "log", moduleName = "log"}
-]
 
 [[package]]
 org = "ballerina"
@@ -251,7 +248,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.14.0"
+version = "1.14.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -293,7 +290,6 @@ name = "data_service"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinax", name = "mysql"},
@@ -318,7 +314,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "mysql"
-version = "1.13.0"
+version = "1.13.1"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
@@ -337,3 +333,4 @@ version = "1.6.0"
 modules = [
 	{org = "ballerinax", packageName = "mysql.driver", moduleName = "mysql.driver"}
 ]
+
