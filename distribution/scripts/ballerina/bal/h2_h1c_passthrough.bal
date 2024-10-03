@@ -17,12 +17,14 @@
 import ballerina/http;
 import ballerina/log;
 
+configurable string epTrustStorePath = ?;
+configurable string epKeyPassword = ?;
 listener http:Listener securedEP = new (9090,
     httpVersion = "2.0",
     secureSocket = {
         key: {
-            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
-            password: "ballerina"
+            path: epTrustStorePath,
+            password: epKeyPassword
         }
     }
 );

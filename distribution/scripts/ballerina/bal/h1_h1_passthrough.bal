@@ -1,11 +1,15 @@
 import ballerina/http;
 import ballerina/log;
 
+configurable string epKeyPath = ?;
+configurable string epTrustStorePath = ?;
+configurable string epKeyPassword = ?;
+
 listener http:Listener securedEP = new (9090,
     secureSocket = {
         key: {
-            path: "/home/ubuntu/ballerina-performance-distribution-1.1.1-SNAPSHOT/ballerinaKeystore.p12",
-            password: "ballerina"
+            path: epKeyPath,
+            password: epKeyPassword
         }
     }
 );
@@ -13,8 +17,8 @@ listener http:Listener securedEP = new (9090,
 final http:Client nettyEP = check new ("https://netty:8688",
     secureSocket = {
         cert: {
-            path: "/home/ubuntu/ballerina-performance-distribution-1.1.1-SNAPSHOT/ballerinaTruststore.p12",
-            password: "ballerina"
+            path: epTrustStorePath,
+            password: epKeyPassword
         },
         verifyHostName: false
     }
