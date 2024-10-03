@@ -14,10 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/data.xmldata;
+import ballerina/http;
 
 configurable string epKeyPath = ?;
+configurable string epTrustStorePath = ?;
 configurable string epKeyPassword = ?;
 
 listener http:Listener securedEP = new (9090,
@@ -32,7 +33,7 @@ listener http:Listener securedEP = new (9090,
 final http:Client nettyEP = check new ("netty:8688",
     secureSocket = {
         cert: {
-            path: epKeyPath,
+            path: epTrustStorePath,
             password: epKeyPassword
         },
         verifyHostName: false
