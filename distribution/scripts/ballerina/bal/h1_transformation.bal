@@ -37,7 +37,7 @@ service /transform on securedEP {
         }
         http:Request clinetreq = new;
         clinetreq.setXmlPayload(xmlPayload);
-        http:Response|http:ClientError response = nettyEP->post("/service/EchoService", clinetreq);
+        http:Response|http:ClientError response = nettyEP->/'service/EchoService.post(clinetreq);
         if response is http:ClientError {
             return getErrorResponse(response, http:STATUS_INTERNAL_SERVER_ERROR);
         }
