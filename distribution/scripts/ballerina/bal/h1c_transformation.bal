@@ -1,6 +1,6 @@
+import ballerina/data.xmldata;
 import ballerina/http;
 import ballerina/log;
-import ballerina/xmldata;
 
 final http:Client nettyEP = check new ("http://netty:8688");
 

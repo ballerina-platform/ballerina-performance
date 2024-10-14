@@ -1,6 +1,6 @@
+import ballerina/data.xmldata;
 import ballerina/http;
 import ballerina/log;
-import ballerina/xmldata;
 
 configurable string epKeyPath = ?;
 configurable string epTrustStorePath = ?;
