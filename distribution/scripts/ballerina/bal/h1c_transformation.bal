@@ -1,6 +1,6 @@
+import ballerina/data.xmldata;
 import ballerina/http;
 import ballerina/log;
-import ballerina/xmldata;
 
 final http:Client nettyEP = check new ("http://netty:8688");
 
@@ -14,9 +14,9 @@ service /transform on new http:Listener(9090) {
         if xmlPayload is xmldata:Error? {
             return getErrorResponse(xmlPayload, http:STATUS_BAD_REQUEST);
         }
-        http:Request clinetreq = new;
-        clinetreq.setXmlPayload(xmlPayload);
-        http:Response|http:ClientError response = nettyEP->post("/service/EchoService", clinetreq);
+        http:Request clientReq = new;
+        clientReq.setXmlPayload(xmlPayload);
+        http:Response|http:ClientError response = nettyEP->/'service/EchoService.post(clientReq);
         if response is http:ClientError {
             return getErrorResponse(response, http:STATUS_INTERNAL_SERVER_ERROR);
         }
