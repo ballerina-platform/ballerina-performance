@@ -1,0 +1,22 @@
+name: Manual Branch Build
+
+on:
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: 'Branch to build'
+                required: true
+                default: 'main'
+
+jobs:
+    build:
+        runs-on: self-hosted
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v2
+            with:
+              ref: ${{ github.event.inputs.branch }}
+          - name: Clone performance-common repository
+            run: git clone --branch bhashinee-changes git@github.com:wso2/performance-common.git performance-common
+          - name: Build with make dist
+            run: make PERFORMANCE_COMMON_PATH=./performance-common dist
