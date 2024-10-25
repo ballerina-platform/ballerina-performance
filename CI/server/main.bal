@@ -48,7 +48,14 @@ isolated function createDirIfNotExists(string path) returns error? {
 }
 
 isolated function dispatch(string basePath, TestConfig config) returns error? {
+    string ballerinaPerf = check file:createTempDir(dir = basePath);
+    var {url, branch} = config.repo;
+    check cloneRepository(url, branch, ballerinaPerf);
     io:println("Dispatching: ", config);
+    _ = check exec("make",
+            ["run", string `TOKEN=${config.token}`, string `DEB_URL=${config.balInstallerUrl}`],
+            ballerinaPerf);
+    io:println("Done");
 }
 
 isolated function cloneRepository(string url, string branch, string targetPath) returns error? {
@@ -62,25 +69,17 @@ isolated function cloneRepository(string url, string branch, string targetPath) 
     }
 }
 
-isolated function exec(string command, string[] args, os:EnvProperties? env = (), string? cwd = ()) returns os:Process|error {
+isolated function exec(string command, string[] args, string? cwd = ()) returns os:Process|error {
     if cwd == () {
         io:println(string `${command} ${" ".join(...args)}`);
         return os:exec({value: command, arguments: args});
-    }
-    if env == () {
-        string commandLine = string `cd ${cwd} && ${command} ${" ".join(...args)}`;
-        io:println(commandLine);
-        return os:exec({
-                           value: "sh",
-                           arguments: ["-c", commandLine]
-                       });
     }
     string commandLine = string `cd ${cwd} && ${command} ${" ".join(...args)}`;
     io:println(commandLine);
     return os:exec({
                        value: "sh",
                        arguments: ["-c", commandLine]
-                   }, env);
+                   });
 }
 
 // TODO: move to common
