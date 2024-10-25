@@ -28,7 +28,6 @@ DEB_URL?=https://dist.ballerina.io/downloads/$(BAL_VER)/ballerina-$(BAL_VER)-swa
 UNPACK_STAMP=.unpack.stamp
 NETTY_REPLACE_STAMP=.netty.stamp
 SCRIPT_PATH_STAMP=.template.stamp
-ADD_RUNNER_STAMP=.runner.stamp
 KEY_STAMP=.key.stamp
 REPACK_STAMP=.repack.stamp
 DEB_STAMP=.deb.stamp
@@ -54,7 +53,7 @@ $(DEB_STAMP): $(REPACK_STAMP)
 	cd $(BUILD_DIR) && curl -L -o ballerina-$(BAL_VER)-swan-lake-linux-x64.deb $(DEB_URL)
 	touch $(DEB_STAMP)
 
-$(REPACK_STAMP): $(KEY_STAMP) $(NETTY_REPLACE_STAMP) $(ADD_RUNNER_STAMP) $(SCRIPT_PATH_STAMP)
+$(REPACK_STAMP): $(KEY_STAMP) $(NETTY_REPLACE_STAMP) $(SCRIPT_PATH_STAMP)
 	mkdir -p $(BUILD_DIR)/dist/$(DIST_NAME)
 	mv $(BUILD_DIR)/dist/ $(BUILD_DIR)/$(DIST_NAME)
 	tar -czf $(BUILD_DIR)/$(DIST_NAME).tar.gz -C $(BUILD_DIR) $(DIST_NAME)
@@ -67,10 +66,6 @@ $(PERF_TAR_PATH):
 $(KEY_STAMP): $(KEY_FILES) $(UNPACK_STAMP)
 	cp $(KEY_FILES) $(BUILD_DIR)/dist
 	touch $(KEY_STAMP)
-
-$(ADD_RUNNER_STAMP): $(UNPACK_STAMP)
-	cp -r ./runner $(BUILD_DIR)/dist
-	touch $(ADD_RUNNER_STAMP)
 
 $(SCRIPT_PATH_STAMP): $(UNPACK_STAMP)
 	cp -r $(CLOUD_FORMATION_SCRIPTS) $(BUILD_DIR)/dist/cloudformation/
