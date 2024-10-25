@@ -1,5 +1,5 @@
-TOKEN?=
-BALLERINA_PERFORMANCE_REPO?=git@github.com:heshanpadmasiri/ballerina-performance.git
+GITHUB_TOKEN?=
+BALLERINA_PERFORMANCE_OWNER?=heshanpadmasiri
 BALLERINA_PERFORMANCE_BRANCH?=main
 
 PERFORMANCE_COMMON_REPO?=https://github.com/heshanpadmasiri/performance-common.git

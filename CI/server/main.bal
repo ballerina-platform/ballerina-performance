@@ -53,9 +53,9 @@ isolated function dispatch(string basePath, TestConfig config) returns error? {
     check cloneRepository(url, branch, ballerinaPerf);
     io:println("Dispatching: ", config);
     _ = check exec("make",
-            ["run", string `TOKEN=${config.token}`, string `DEB_URL=${config.balInstallerUrl}`],
+            ["run", string `GITHUB_TOKEN=${config.token}`, string `DEB_URL=${config.balInstallerUrl}`],
             ballerinaPerf);
-    io:println("Done");
+    io:println("Dispatched");
 }
 
 isolated function cloneRepository(string url, string branch, string targetPath) returns error? {

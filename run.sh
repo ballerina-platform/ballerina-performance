@@ -4,10 +4,10 @@ echo "Dist name: $1"
 echo "Intaller name: $2"
 mkdir -p ./tmp
 cp ./build/dist.tar.gz ./tmp
-cd ./tmp
+pushd ./tmp
 tar -xvf dist.tar.gz
 tar -xvf $1.tar.gz
-cd $1
+pushd $1
 ./cloudformation/run-performance-tests.sh \
 -u heshanp@wso2.com \
 -f ../$1.tar.gz \
@@ -25,3 +25,25 @@ cd $1
 -u 100 \
 -b 500 \
 -s 0 -j 2G -k 2G -m 1G -l 2G
+
+
+summary_file="./results/summary.md"
+if [ ! -f $summary_file ]; then
+    echo "The file ./results/summary.md does not exist."
+    exit 1
+fi
+
+summary_path=$(realpath $summary_file)
+popd
+popd
+pushd ..
+gh repo clone heshanpadmasiri/ballerina-performance new-ballerina-performance
+pushd new-ballerina-performance
+mkdir -p performance-results
+timestamp=$(date +"%Y%m%d%H%M%S")
+cp "$summary_path" "./performance-results/${timestamp}.md"
+git add ./performance-results/${timestamp}.md
+git commit -m "Add performance test results for ${timestamp}"
+git push origin main
+
+gh pr create --title "Add performance test results for ${timestamp}" --body "This PR adds the performance test results for ${timestamp}."
