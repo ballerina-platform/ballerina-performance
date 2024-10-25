@@ -25,24 +25,24 @@ pushd $1
 -u 100 \
 -b 500 \
 -s 0 -j 2G -k 2G -m 1G -l 2G
-summary.md
 
 summary_file=$(find . -name "summary.md" | head | xargs realpath)
 if [ ! -f $summary_file ]; then
-    echo "The file ./results/summary.md does not exist."
+    echo "The file summary.md does not exist."
     exit 1
 fi
-
+echo "Summary file: $summary_file"
 popd
 popd
 pushd ..
+# TODO: this should be the upstream master
 gh repo clone heshanpadmasiri/ballerina-performance new-ballerina-performance
 pushd new-ballerina-performance
-mkdir -p performance-results
 timestamp=$(date +"%Y%m%d%H%M%S")
+git checkout -b "performance-results-${timestamp}"
+mkdir -p performance-results
 cp "$summary_file" "./performance-results/${timestamp}.md"
 git add ./performance-results/${timestamp}.md
 git commit -m "Add performance test results for ${timestamp}"
-git push origin main
 
-gh pr create --title "Add performance test results for ${timestamp}" --body "This PR adds the performance test results for ${timestamp}."
+# gh pr create --title "Add performance test results for ${timestamp}" --body "This PR adds the performance test results for ${timestamp}."
