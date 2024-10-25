@@ -10,3 +10,8 @@
 
 # Maven Target
 target
+
+*.stamp
+*.DS_Store
+build/
+tmp/
