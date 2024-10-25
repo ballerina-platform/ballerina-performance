@@ -25,15 +25,14 @@ pushd $1
 -u 100 \
 -b 500 \
 -s 0 -j 2G -k 2G -m 1G -l 2G
+summary.md
 
-
-summary_file="./results/summary.md"
+summary_file=$(find . -name "summary.md" | head | xargs realpath)
 if [ ! -f $summary_file ]; then
     echo "The file ./results/summary.md does not exist."
     exit 1
 fi
 
-summary_path=$(realpath $summary_file)
 popd
 popd
 pushd ..
@@ -41,7 +40,7 @@ gh repo clone heshanpadmasiri/ballerina-performance new-ballerina-performance
 pushd new-ballerina-performance
 mkdir -p performance-results
 timestamp=$(date +"%Y%m%d%H%M%S")
-cp "$summary_path" "./performance-results/${timestamp}.md"
+cp "$summary_file" "./performance-results/${timestamp}.md"
 git add ./performance-results/${timestamp}.md
 git commit -m "Add performance test results for ${timestamp}"
 git push origin main
