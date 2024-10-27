@@ -35,8 +35,8 @@ echo "Summary file: $summary_file"
 popd
 popd
 pushd ..
-# TODO: this should be the upstream master
-gh repo clone heshanpadmasiri/ballerina-performance new-ballerina-performance
+
+gh repo clone ballerina-platform/ballerina-performance new-ballerina-performance
 pushd new-ballerina-performance
 timestamp=$(date +"%Y%m%d%H%M%S")
 git checkout -b "performance-results-${timestamp}"
@@ -45,4 +45,4 @@ cp "$summary_file" "./performance-results/${timestamp}.md"
 git add ./performance-results/${timestamp}.md
 git commit -m "Add performance test results for ${timestamp}"
 
-# gh pr create --title "Add performance test results for ${timestamp}" --body "This PR adds the performance test results for ${timestamp}."
+gh pr create --title "Add performance test results for ${timestamp}" --body "This PR adds the performance test results for ${timestamp}."

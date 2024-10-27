@@ -1,6 +1,4 @@
 GITHUB_TOKEN?=
-BALLERINA_PERFORMANCE_OWNER?=heshanpadmasiri
-BALLERINA_PERFORMANCE_BRANCH?=main
 
 PERFORMANCE_COMMON_REPO?=https://github.com/heshanpadmasiri/performance-common.git
 PERFORMANCE_COMMON_BRANCH?=ballerina-patch
