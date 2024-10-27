@@ -82,7 +82,7 @@ isolated function exec(string command, string[] args, string? cwd = ()) returns 
                    });
 }
 
-// TODO: move to common
+// Common types for both client and server
 public type PerfTestTiggerResult "success"|record {string message;};
 
 type Repo readonly & record {|

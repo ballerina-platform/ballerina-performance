@@ -10,7 +10,6 @@ on:
             installer_url:
                 description: 'URL to download the .deb installer'
                 required: true
-                default: 'https://dist.ballerina.io/downloads/2201.10.2/ballerina-2201.10.2-swan-lake-linux-x64.deb'
 
 jobs:
     build:

@@ -29,15 +29,12 @@ public function main() returns error? {
             branch
         }
     };
-    // FIXME: create issue for this, not working with PerfTestTiggerResult
     string|record {|string message;|} response = check 'client->/triggerPerfTest.post(config);
     if response !is string {
         return error(string `failed to trigger the performance test due to ${response.message}`);
     }
     io:println("Performance test triggered successfully");
 }
-
-public type PerfTestTiggerResult "success"|record {string message;};
 
 type Repo readonly & record {|
     string url;
