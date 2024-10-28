@@ -19,12 +19,12 @@ pushd $1
 -s 'wso2-ballerina-test1-' \
 -b ballerina-sl-9 \
 -r 'us-east-1' \
--J c5.xlarge -S c5.xlarge -N c5.xlarge -B t3a.small \
+-J c5.xlarge -S c5.xlarge -N c5.xlarge -B c5.large \
 -i ../$2 \
 -- -d 360 -w 180 \
--u 100 \
--b 500 \
--s 0 -j 2G -k 2G -m 1G -l 2G
+-u 100 -u 200 -u 500 -u 1000 \
+-b 500 -b 1000 -b 10000 -b 100000 \
+-s 0 -j 2G -k 2G -m 2G -l 2G
 
 summary_file=$(find . -name "summary.md" | head | xargs realpath)
 if [ ! -f $summary_file ]; then
