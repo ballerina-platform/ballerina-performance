@@ -1,8 +1,6 @@
 GITHUB_TOKEN?=
-
 PERFORMANCE_COMMON_REPO?=https://github.com/heshanpadmasiri/performance-common.git
 PERFORMANCE_COMMON_BRANCH?=ballerina-patch
-
 AWS_PAGER=
 PERFORMANCE_COMMON_PATH?=../performance-common
 JAVA_HOME?=/home/ubuntu/jdk/jdk-17.0.13+11

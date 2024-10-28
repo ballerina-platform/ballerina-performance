@@ -1,6 +1,6 @@
 import ballerina/file;
 import ballerina/http;
-import ballerina/io;
+import ballerina/log;
 import ballerina/os;
 
 configurable string password = ?;
@@ -24,15 +24,15 @@ service / on ep {
         checkpanic createDirIfNotExists(self.basePath);
     }
 
-    resource function post triggerPerfTest(TestConfig testConfig) returns PerfTestTiggerResult {
-        io:println("Triggering performance test");
+    resource function post triggerPerfTest(TestConfig testConfig) returns PerfTestTriggerResult {
+        log:printInfo("Triggering performance test");
         error? result = self.runTest(testConfig);
         if result is error {
-            string errorMessage = "Failed to trigger the performance test due to " + result.message();
-            io:println(errorMessage);
-            return {message: result.message()};
+            string message = "Failed to trigger the performance test due to " + result.message();
+            log:printError(message);
+            return {message};
         }
-        io:println("Done");
+        log:printInfo("Done");
         return "success";
     }
 
@@ -51,11 +51,11 @@ isolated function dispatch(string basePath, TestConfig config) returns error? {
     string ballerinaPerf = check file:createTempDir(dir = basePath);
     var {url, branch} = config.repo;
     check cloneRepository(url, branch, ballerinaPerf);
-    io:println("Dispatching: ", config);
+    log:printDebug(string `Dispatching:  ${config.toJsonString()}`);
     _ = check exec("make",
             ["run", string `GITHUB_TOKEN=${config.token}`, string `DEB_URL=${config.balInstallerUrl}`],
             ballerinaPerf);
-    io:println("Dispatched");
+    log:printDebug("Dispatched");
 }
 
 isolated function cloneRepository(string url, string branch, string targetPath) returns error? {
@@ -71,11 +71,11 @@ isolated function cloneRepository(string url, string branch, string targetPath) 
 
 isolated function exec(string command, string[] args, string? cwd = ()) returns os:Process|error {
     if cwd == () {
-        io:println(string `${command} ${" ".join(...args)}`);
+        log:printDebug(string `${command} ${" ".join(...args)}`);
         return os:exec({value: command, arguments: args});
     }
     string commandLine = string `cd ${cwd} && ${command} ${" ".join(...args)}`;
-    io:println(commandLine);
+    log:printDebug(commandLine);
     return os:exec({
                        value: "sh",
                        arguments: ["-c", commandLine]
@@ -83,7 +83,7 @@ isolated function exec(string command, string[] args, string? cwd = ()) returns 
 }
 
 // Common types for both client and server
-public type PerfTestTiggerResult "success"|record {string message;};
+public type PerfTestTriggerResult "success"|record {string message;};
 
 type Repo readonly & record {|
     string url;
