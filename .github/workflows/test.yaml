@@ -10,6 +10,12 @@ on:
             installer_url:
                 description: 'URL to download the .deb installer'
                 required: true
+            host:
+                description: 'Address of the host running the performance test server'
+                required: true
+            port:
+                description: 'Port of the host running the performance test server'
+                required: true
 
 jobs:
     build:
@@ -24,7 +30,7 @@ jobs:
             with:
               args:
                 run
-                -- -Cpassword=${{ secrets.PASSWORD }} -Chost=${{ secrets.HOST }} -Cport=${{ secrets.PORT }} -Ctoken=${{ secrets.TOKEN }} -CbalInstallerUrl=${{ github.event.inputs.installer_url }} -CrepoUrl="${{ github.server_url }}/${{ github.repository }}" -Cbranch=${{ github.event.inputs.branch }}
+                -- -Cpassword=${{ secrets.PASSWORD }} -Chost=${{ github.event.inputs.host }} -Cport=${{ github.event.inputs.port }} -Ctoken=${{ secrets.TOKEN }} -CbalInstallerUrl=${{ github.event.inputs.installer_url }} -CrepoUrl="${{ github.server_url }}/${{ github.repository }}" -Cbranch=${{ github.event.inputs.branch }}
             env:
               WORKING_DIR: ./CI/client
 
