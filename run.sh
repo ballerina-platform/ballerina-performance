@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 echo "Dist name: $1"
 echo "Intaller name: $2"
 mkdir -p ./tmp
